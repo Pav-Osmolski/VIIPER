@@ -1,5 +1,8 @@
 # Controller platform validation status, 2026-09-04
 
+> **Historical record.** This preserves the source, tests and limitations recorded at the time; it is not current setup guidance. See the [documentation index](../index.md).
+
+
 Current working order: [itemized execution checklist](controller-platform-execution-checklist.md).
 The user redirected prioritization on September 4: core USB/Xbox/Bluetooth play
 and measured failures take precedence over continuing the profile-picker pathway.

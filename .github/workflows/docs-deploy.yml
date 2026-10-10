@@ -49,13 +49,11 @@ jobs:
 
                   if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]]; then
                     echo "Injecting version: $TAG_NAME into install scripts"
-                    sed -i "s/VIIPER_VERSION=\"dev-snapshot\"/VIIPER_VERSION=\"$TAG_NAME\"/" scripts/install.sh
                     sed -i "s/\\\$viiperVersion = \"dev-snapshot\"/\\\$viiperVersion = \"$TAG_NAME\"/" scripts/install.ps1
                   fi
 
             - name: Copy installation scripts to docs
               run: |
-                  cp scripts/install.sh docs/install.sh
                   cp scripts/install.ps1 docs/install.ps1
 
             - name: Generate changelog for main
