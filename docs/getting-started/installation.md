@@ -15,7 +15,9 @@ their backend beside DS4Windows. The app verifies the expected executable,
 USB/IP files, ABI and API readiness. Avoid a separate standalone service that
 competes with this ownership.
 
-The integration pins usbip-win2 **0.9.7.7 x64**. Do not replace it with another
+VIIPER **0.1.10** / DS4Windows **5.0.15** pin usbip-win2 **0.9.8.1 x64**.
+Until that package is released, existing DS4Windows builds retain their original
+dependency pin. Do not replace it with another
 userspace/driver version. See [USB/IP](usbip.md) for the prerequisite details
 and [startup diagnostics](../startup-diagnostics.md) for failed checks.
 The app's unsigned release status is documented on its release page; driver
