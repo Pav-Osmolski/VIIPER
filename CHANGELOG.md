@@ -4,6 +4,15 @@ Curated release history inherited by the Pav-Osmolski VIIPER fork.
 These records describe their original releases, not a promise that every
 upstream asset is republished here. For DS4Windows, use its bundled backend.
 
+## 0.1.10 — in preparation
+
+- Support the published usbip-win2 0.9.8.1 Windows x64 package, including its new native attach and exact-location retry cancellation layouts.
+- Use the new low-latency WSK receive mode for Windows virtual-controller imports, through both native and command-line attach paths.
+- Preserve exact Xbox One registration/removal authority, one-attempt production attachment, and cancellation buffer lifetimes.
+- Leave attach serial overrides empty because the published upstream 0.9.8.1 implementation has a known bug.
+- Update the developer-only Windows setup pin and accept the new plain serial field while rejecting foreign imports during cleanup.
+- Build numeric fork releases as drafts for testing, with corresponding source and checksums. Client registry publication remains disabled for this fork.
+
 ## Inherited release records
 
 The following records preserve the original release descriptions and their

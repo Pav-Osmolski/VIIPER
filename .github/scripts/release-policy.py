@@ -13,7 +13,7 @@ SEMVER_TAG = re.compile(
 )
 
 
-def classify_release_tag(tag):
+def classify_release_tag(tag, repository="hbashton/VIIPER"):
     match = SEMVER_TAG.fullmatch(tag)
     if not match:
         raise ValueError("Release tag must be a complete v-prefixed semantic version")
@@ -24,14 +24,19 @@ def classify_release_tag(tag):
     ):
         raise ValueError("Numeric prerelease identifiers must not have leading zeroes")
     is_prerelease = prerelease is not None
+    managed_fork = repository == "Pav-Osmolski/VIIPER"
     return {
         "prerelease": is_prerelease,
-        "draft": is_prerelease,
-        "publish_client_registries": not is_prerelease,
+        "draft": is_prerelease or managed_fork,
+        "publish_client_registries": not is_prerelease and not managed_fork,
     }
 
 
 class ReleasePolicyTests(unittest.TestCase):
+    def test_fork_numeric_release_waits_for_testing_without_registry_writes(self):
+        self.assertEqual(classify_release_tag("v0.1.10", "Pav-Osmolski/VIIPER"),
+                         {"prerelease": False, "draft": True, "publish_client_registries": False})
+
     def test_rc_is_an_unpublished_prerelease_without_registry_publication(self):
         self.assertEqual(
             classify_release_tag("v0.1.3-rc4.5"),
@@ -66,6 +71,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("tag", nargs="?")
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--repository", default="hbashton/VIIPER")
     args = parser.parse_args()
     if args.self_test:
         result = unittest.TextTestRunner(verbosity=2).run(
@@ -73,7 +79,7 @@ def main():
         )
         return 0 if result.wasSuccessful() else 1
     try:
-        policy = classify_release_tag(args.tag or "")
+        policy = classify_release_tag(args.tag or "", args.repository)
     except ValueError as error:
         parser.error(str(error))
     for key, value in policy.items():

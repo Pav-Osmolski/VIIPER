@@ -26,7 +26,7 @@ jobs:
             - name: Classify tag
               id: policy
               shell: bash
-              run: python3 .github/scripts/release-policy.py "$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+              run: python3 .github/scripts/release-policy.py "$GITHUB_REF_NAME" --repository "$GITHUB_REPOSITORY" >> "$GITHUB_OUTPUT"
 
     build:
         needs: release-policy
@@ -102,6 +102,11 @@ jobs:
                   flat_name="VIIPER-${GITHUB_REF_NAME#v}-x64.exe"
                   unzip -p release_files/viiper-windows-amd64.zip viiper.exe > "release_files/$flat_name"
                   test -s "release_files/$flat_name"
+                  # Corresponding source and checksums accompany the exact
+                  # tagged binaries, including unpublished numeric drafts.
+                  source_name="VIIPER-${GITHUB_REF_NAME#v}-SOURCE.zip"
+                  git archive --format=zip --prefix="${source_name%.zip}/" "$GITHUB_SHA" -o "release_files/$source_name"
+                  (cd release_files && sha256sum viiper-* VIIPER-* > SHA256SUMS.txt)
                   ls -la release_files/
 
             - name: Extract build info
@@ -146,10 +151,11 @@ jobs:
                       <details>
                       <summary><b>Linux</b></summary>
 
-                      ```bash
-                      curl -fsSL https://raw.githubusercontent.com/hbashton/VIIPER/main/scripts/install.sh | sh
-                      ```
-                      Installs / updates to `/usr/local/bin/viiper`
+                      Download the archive for your architecture and extract
+                      it into a dedicated directory. Install your distribution's
+                      USB/IP tools and load `vhci-hcd` before starting VIIPER.
+                      See the repository's installation guide for permissions
+                      and configuration. A standalone install script is not provided.
                       </details>
                   files: release_files/*
                   prerelease: ${{ needs.release-policy.outputs.prerelease == 'true' }}
