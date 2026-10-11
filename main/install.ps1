@@ -14,15 +14,15 @@ if (-not $DeveloperStandalone -or
         $env:VIIPER_DEVELOPER_STANDALONE -ne "1") {
     throw (
         "Standalone VIIPER setup on Windows is developer-only. Use the " +
-        "signed DS4Windows standard installer or Settings > VIIPER Virtual " +
+        "DS4Windows standard installer or Settings > VIIPER Virtual " +
         "Controller Support so VIIPER and USB-IP are installed from the " +
         "same verified offline package. Developers must explicitly pass " +
         "-DeveloperStandalone and set VIIPER_DEVELOPER_STANDALONE=1."
     )
 }
 
-$viiperVersion = "v0.1.2"
-$usbipTargetVersion = [Version]"0.9.7.7"
+$viiperVersion = "v0.1.10"
+$usbipTargetVersion = [Version]"0.9.8.1"
 $installDir = Join-Path $env:LOCALAPPDATA "VIIPER"
 $usbipReplacementStatePath = Join-Path $installDir `
     "usbip-replacement-pending.json"
@@ -37,7 +37,7 @@ $canonicalUsbipPath = Join-Path $programFilesRoot "USBip\usbip.exe"
 
 Write-Host "VIIPER setup plan:" -ForegroundColor Cyan
 Write-Host "  1. Download and install VIIPER first." -ForegroundColor Cyan
-Write-Host "  2. Verify or install signed usbip-win2 0.9.7.7." -ForegroundColor Cyan
+Write-Host "  2. Verify or install signed usbip-win2 0.9.8.1." -ForegroundColor Cyan
 Write-Host "  3. Verify the USBIP ABI before starting VIIPER." -ForegroundColor Cyan
 Write-Host "USB hubs may restart, and Windows may require a reboot." -ForegroundColor Yellow
 if (-not $Yes) {
@@ -49,7 +49,7 @@ if (-not $Yes) {
     }
 }
 
-$repo = "hbashton/VIIPER"
+$repo = "Pav-Osmolski/VIIPER"
 $apiUrl = "https://api.github.com/repos/$repo/releases/tags/$viiperVersion"
 
 Write-Host "[1/4] Fetching VIIPER release: $viiperVersion..." -ForegroundColor Cyan
@@ -67,7 +67,7 @@ $arch = if ([Environment]::Is64BitOperatingSystem) { "amd64" } else {
 }
 
 if ((Get-CimInstance Win32_ComputerSystem).SystemType -match "ARM") {
-    throw "The current hbashton VIIPER package supports Windows x64 only."
+    throw "The current VIIPER package supports Windows x64 only."
 }
 
 $preferredAssetNames = @("viiper-windows-$arch.zip", "viiper.exe")
@@ -215,7 +215,7 @@ try {
         if (-not $state.BootSessionId -or
                 $state.BootSessionId -eq (Get-WindowsBootSessionId)) {
             throw "USBIP replacement phase 1 is complete. Restart Windows " +
-                "yourself, then run setup again to install 0.9.7.7."
+                "yourself, then run setup again to install 0.9.8.1."
         }
 
         Write-Host "Validating the required reboot after USBIP removal..." `
@@ -664,7 +664,7 @@ exit 32
         return [pscustomobject]@{
             Healthy = $true
             Reason = "ready"
-            Detail = "0.9.7.7 ABI probe passed"
+            Detail = "0.9.8.1 ABI probe passed"
         }
     }
 
@@ -722,17 +722,17 @@ exit 32
             $block, '(?im)^\s*->\s+serial\b(?<value>.*)$')
         if (-not $serialLine.Success -or
                 [string]::IsNullOrWhiteSpace(
-                    $serialLine.Groups['value'].Value.Trim(" '"))) {
-            # usbip-win2 0.9.7.7 has no attach-time owner serial. The exact
+                    $serialLine.Groups['value'].Value.Trim(" :'"))) {
+            # The published 0.9.8.1 serial override is broken. The exact
             # loopback VIIPER endpoint and bus/device tuple are its identity.
             return $true
         }
 
         $serial = [regex]::Match(
             $serialLine.Groups['value'].Value,
-            "^\s*'(?<serial>[^']+)'\s*$")
+            "^\s*(?::\s*(?<serial>[^\r\n]+)|'(?<serial>[^']+)')\s*$")
         return $serial.Success -and
-            $serial.Groups['serial'].Value -cmatch '^DS4W[0-9A-Fa-f]{11}$'
+            $serial.Groups['serial'].Value.Trim() -cmatch '^DS4W[0-9A-Fa-f]{11}$'
     }
 
     function Disconnect-UsbipImports([string]$usbipPath) {
@@ -1120,16 +1120,16 @@ exit 32
     if (-not $needsUsbipInstall) {
         if ($usbipRuntimeBefore.Healthy) {
             Write-Host (
-                "USBIP 0.9.7.7 userspace/driver ABI is ready at the canonical " +
+                "USBIP 0.9.8.1 userspace/driver ABI is ready at the canonical " +
                 "Program Files path."
             ) -ForegroundColor Green
         }
         else {
             Write-Host (
-                "USBIP 0.9.7.7 is installed, but its live ABI probe failed: " +
+                "USBIP 0.9.8.1 is installed, but its live ABI probe failed: " +
                 "$($usbipRuntimeBefore.Detail). Setup will not overlay a " +
                 "running kernel driver. Restart Windows, then run setup " +
-                "again. If the probe still fails, uninstall 0.9.7.7, " +
+                "again. If the probe still fails, uninstall 0.9.8.1, " +
                 "restart, and rerun setup."
             ) -ForegroundColor Yellow
         }
@@ -1144,13 +1144,13 @@ exit 32
     elseif ($usbipInstalledVersion) {
         Write-Host (
             "USBIP reports version $usbipInstalledVersion, but its canonical " +
-            "0.9.7.7 runtime is not usable ($($usbipRuntimeBefore.Detail)). " +
-            "Repairing the exact 0.9.7.7 package..."
+            "0.9.8.1 runtime is not usable ($($usbipRuntimeBefore.Detail)). " +
+            "Repairing the exact 0.9.8.1 package..."
         ) -ForegroundColor Yellow
     }
     else {
         Write-Host (
-            "USBIP 0.9.7.7 is missing or unusable " +
+            "USBIP 0.9.8.1 is missing or unusable " +
             "($($usbipRuntimeBefore.Detail)). Installing the exact package..."
         ) -ForegroundColor Yellow
     }
@@ -1187,9 +1187,9 @@ exit 32
                 ) -ForegroundColor Yellow
             }
             else {
-                $usbipInstallerUrl = "https://github.com/vadimgrn/usbip-win2/releases/download/v.0.9.7.7/USBip-0.9.7.7-x64.exe"
+                $usbipInstallerUrl = "https://github.com/vadimgrn/usbip-win2/releases/download/v.0.9.8.1/USBip-0.9.8.1-x64.exe"
                 $usbipInstaller = Join-Path $tempDir "USBip-setup.exe"
-                Write-Host "  Downloading exact usbip-win2 0.9.7.7..." `
+                Write-Host "  Downloading exact usbip-win2 0.9.8.1..." `
                     -ForegroundColor Cyan
                 Invoke-WebRequest -Uri $usbipInstallerUrl `
                     -OutFile $usbipInstaller -ErrorAction Stop
@@ -1197,7 +1197,7 @@ exit 32
                     -LiteralPath $usbipInstaller -Algorithm SHA256).
                     Hash.ToLowerInvariant()
                 if ($usbipInstallerHash -ne
-                        "51620fa5f9f8be5932bc9d786deee557ce06d5407a99cab490dcfac71f185fea") {
+                        "38cad6d4432b52d5bb9409d9ad03b72fdffc4ada4cd3a48fbeca1a2752a8518a") {
                     throw "USBIP installer integrity check failed."
                 }
 
@@ -1246,7 +1246,7 @@ exit 32
     }
     if (-not $usbipRuntime.Healthy -and -not $needsReboot) {
         $needsReboot = $true
-        Write-Host "USBIP 0.9.7.7 is installed but not active yet: $($usbipRuntime.Detail)" -ForegroundColor Yellow
+        Write-Host "USBIP 0.9.8.1 is installed but not active yet: $($usbipRuntime.Detail)" -ForegroundColor Yellow
     }
 
     if ($usbipRuntime.Healthy -and -not $needsReboot) {
@@ -1284,7 +1284,7 @@ exit 32
 
     if ($needsReboot) {
         Write-Host ""
-        Write-Host "USBIP 0.9.7.7 requires a restart before VIIPER can run safely." -ForegroundColor Yellow
+        Write-Host "USBIP 0.9.8.1 requires a restart before VIIPER can run safely." -ForegroundColor Yellow
         Write-Host "VIIPER startup remains disabled. Restart Windows yourself, then run this setup again." -ForegroundColor Yellow
     }
     # `viiper install` above starts the single verified server instance.

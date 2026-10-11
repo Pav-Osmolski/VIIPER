@@ -1626,6 +1626,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#windows-driver-abi-for-viiper-0110" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Windows driver ABI for VIIPER 0.1.10
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Windows driver ABI for VIIPER 0.1.10">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#native-activation-retry-policy-september-5-source-follow-up" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1635,8 +1647,8 @@
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#native-activation-cancellation-september-5-source-follow-up" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1644,6 +1656,11 @@
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1668,6 +1685,45 @@
 
 
 <h1 id="exact-production-xbox-one-removal">Exact production Xbox One removal</h1>
+<h2 id="windows-driver-abi-for-viiper-0110">Windows driver ABI for VIIPER 0.1.10</h2>
+<p>The Windows integration now targets the published usbip-win2 <strong>0.9.8.1</strong>
+headers at commit <code>55e1fa7f0c2157017b02dc1f3236e98169a535e4</code>.
+Microsoft's C++ compiler independently confirms these layouts:</p>
+<table>
+<thead>
+<tr>
+<th>Native request</th>
+<th style="text-align: right;">Input bytes</th>
+<th style="text-align: right;">Response bytes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PLUGIN_HARDWARE</code> / <code>PLUGIN_HARDWARE_ONCE</code></td>
+<td style="text-align: right;">1124</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr>
+<td>Exact-location <code>STOP_ATTACH_ATTEMPTS</code></td>
+<td style="text-align: right;">1108</td>
+<td style="text-align: right;">1108</td>
+</tr>
+</tbody>
+</table>
+<p>Attach fields are size at 0, output port at 4, location hash at 8, bus ID at
+12, service at 44, host at 76, optional serial at 1104, and <code>wsk_events</code> at
+1120. Retry cancellation has its count at 1104 and does not contain attach's
+serial or receive-mode fields. Golden tests bind these offsets and the separate
+request lengths to the upstream header, alongside completion/cancellation tests.</p>
+<p>Windows attaches select <code>low-latency</code> WSK reception. Production Xbox One retains
+<code>PLUGIN_HARDWARE_ONCE</code>, its exact export alias, token-bound removal, and the
+existing registration lifetime checks. Serial overrides remain empty because
+the published 0.9.8.1 driver has an upstream bug; the post-release fix
+<code>a2a1159763088c85d940078cfa6491f38540953d</code> is not bundled. Port numbers and
+serial display values do not grant removal authority. Native ABI failures do
+not fall back to a command-line attach.</p>
+<p>The implementation notes below retain their original 0.9.7.7 source context.
+Their older request layouts are not the current Windows ABI.</p>
 <p>The authenticated <code>bus/{id}/add-authorized-xboxone</code> response includes a
 top-level <code>removalToken</code>. It is a fresh 256-bit <code>crypto/rand</code> nonce encoded as
 exactly 64 lowercase hexadecimal characters. This is a creation-only secret:
