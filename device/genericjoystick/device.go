@@ -164,8 +164,10 @@ func (j *Joystick) ResolveInputPresentation(c inputpresentation.Claim, outcome i
 	state, valid := j.input.StateForInputPresentationClaim(c)
 	resolved := j.input.ResolveInputPresentation(c, outcome, at)
 	if resolved && valid && outcome == inputpresentation.OutcomeCommit && !j.input.Snapshot().MandatoryNeutral {
-		j.presented = state
-		j.version++
+		if j.presented != state {
+			j.presented = state
+			j.version++
+		}
 		j.tryResynchronizeLocked()
 	}
 	j.fenceSnapshotLocked()

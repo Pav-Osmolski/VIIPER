@@ -278,6 +278,18 @@ func TestWrongEndpointAndCancelledPollCannotConsumeJournal(t *testing.T) {
 	}
 }
 
+func TestUnchangedIdlePollDoesNotStarveControlSnapshot(t *testing.T) {
+	j := newTestJoystick(t, 12)
+	b := make([]byte, ReportSize)
+	_, version := j.SnapshotInputReportInto(b)
+	for range 16 {
+		present(t, j, time.Now())
+	}
+	if !j.InputReportSnapshotCurrent(version) {
+		t.Fatal("identical idle reports invalidated an unchanged control snapshot")
+	}
+}
+
 func TestStreamFragmentationAndDisconnectReset(t *testing.T) {
 	j := newTestJoystick(t, 12)
 	var dev usb.Device = j
