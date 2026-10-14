@@ -10,6 +10,7 @@ import (
 	_ "github.com/Alia5/VIIPER/internal/devicecatalog"
 	"github.com/Alia5/VIIPER/internal/server/api"
 	"github.com/Alia5/VIIPER/internal/server/api/handler"
+	"github.com/Alia5/VIIPER/usbip"
 	"github.com/Alia5/VIIPER/viiperclient"
 	"github.com/Alia5/VIIPER/virtualbus"
 )
@@ -32,11 +33,10 @@ func TestLocalhostManagementAndUSBIPReports(t *testing.T) {
 	defer bus.Close()
 	s.UsbServer.AddBus(bus)
 	client := viiperclient.New(s.ApiServer.Addr())
-	stream, created, err := client.AddDeviceAndConnect(context.Background(), bus.BusID(), "genericjoystick", &device.CreateOptions{DeviceSpecific: `{"version":1,"experimental":true,"buttonCount":12}`})
+	created, err := client.DeviceAddCtx(context.Background(), bus.BusID(), "genericjoystick", &device.CreateOptions{DeviceSpecific: `{"version":1,"experimental":true,"buttonCount":12}`})
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer stream.Close()
 	if created.Type != "genericjoystick" || created.DeviceSpecific["version"] != float64(1) {
 		t.Fatalf("wrong management receipt %+v", created)
 	}
@@ -53,6 +53,22 @@ func TestLocalhostManagementAndUSBIPReports(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer imported.Conn.Close()
+	// Reproduce Windows HID startup, which the old lab omitted: configure the
+	// USB device before acquiring a producer. Configuration fences old leases.
+	setup := [8]byte{0, 9, 1, 0, 0, 0, 0, 0} // SET_CONFIGURATION(1)
+	if err := usb.Submit(imported.Conn, usbip.DirOut, 0, nil, &setup); err != nil {
+		t.Fatal(err)
+	}
+	neutral := make([]byte, genericjoystick.ReportSize)
+	genericjoystick.NewInputState().BuildReportInto(neutral)
+	if _, err := usb.PollInputReport(imported.Conn, neutral, viiperTesting.IntegrationTimeout); err != nil {
+		t.Fatal(err)
+	}
+	stream, err := client.OpenStream(context.Background(), bus.BusID(), created.DevID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer stream.Close()
 	for _, state := range []genericjoystick.InputState{
 		{Hat: 8}, {X: 32767, Y: -32767, Z: 123, Rx: 456, Ry: -789, Rz: 1000, Buttons: 1, Hat: 1}, {Hat: 8},
 	} {

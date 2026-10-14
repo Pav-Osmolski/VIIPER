@@ -100,11 +100,15 @@ func run() error {
 		return err
 	}
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	stream, receipt, err := client.AddDeviceAndConnect(ctx, bus.BusID, "genericjoystick", &device.CreateOptions{DeviceSpecific: string(args)})
+	receipt, err := client.DeviceAddCtx(ctx, bus.BusID, "genericjoystick", &device.CreateOptions{DeviceSpecific: string(args)})
 	cancel()
 	if err != nil {
 		return err
 	}
+	// Windows configures the newly attached HID device asynchronously. Its
+	// SET_CONFIGURATION legitimately retires any earlier producer lease.
+	// Let the launcher prove enumeration/neutral before it opens this stream.
+	var stream *viiperclient.DeviceStream
 	var mu sync.Mutex
 	current := neutral
 	var writeError error

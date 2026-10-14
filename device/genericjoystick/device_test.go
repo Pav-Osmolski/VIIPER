@@ -249,6 +249,29 @@ func TestEndpointRetirementCannotReplayOldState(t *testing.T) {
 	}
 }
 
+func TestConfigurationFenceRequiresPostEnumerationProducer(t *testing.T) {
+	j := newTestJoystick(t, 12)
+	early, _ := j.acquireProducer()
+	if !j.RetireInputPresentationGeneration(j.InputPresentationGeneration(), time.Now()) {
+		t.Fatal("configuration fence refused")
+	}
+	if err := j.publish(early, InputState{X: 32767, Hat: 8}, time.Now()); err == nil {
+		t.Fatal("pre-configuration producer survived the fence")
+	}
+	present(t, j, time.Now()) // Windows reads neutral before lab input connects.
+	late, ok := j.acquireProducer()
+	if !ok {
+		t.Fatal("post-enumeration producer refused")
+	}
+	j.releaseProducer(early) // Closing the old stream must not revoke its successor.
+	if err := j.publish(late, InputState{X: 32767, Hat: 8}, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if got := present(t, j, time.Now()); binary.LittleEndian.Uint16(got[1:]) != 65534 {
+		t.Fatal("post-enumeration producer did not deliver movement")
+	}
+}
+
 func TestStaleHistoryFencesControlSnapshot(t *testing.T) {
 	j := newTestJoystick(t, 12)
 	lease, _ := j.acquireProducer()
