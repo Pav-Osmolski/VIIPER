@@ -136,3 +136,18 @@ frontend branch's `docs/directinput-development.md`.
    recording game edition, patches, bindings and controller configuration.
 4. Package a matched preview and invite user testing. Force feedback and
    arbitrary descriptor customization are separate future work.
+## DS4Windows portable physical-controller preview
+
+The corresponding DS4Windows feature branch now exposes this output only in its
+hash-pinned portable lab context. It sends the requested six resting axes during
+creation and waits for the versioned `genericjoystick-v1` capability response and
+`inputConfigured: true` before opening the producer. The backend reports readiness
+only after an accepted USB SET_CONFIGURATION(1). Configuration zero and exact
+native import closure clear readiness; stale import generations cannot clear a
+successor's state. Resetting an endpoint alone does not establish configuration.
+
+The first physical preview uses twelve buttons and the existing validated wire
+contract. It adds no feedback, audio or production identity allocation. Native
+synthetic validation remains the recorded evidence; real controllers and old
+games are the next user-run validation step. See DS4Windows's
+`utils/GenericJoystickPreview/README.txt` for the isolated launcher and test plan.

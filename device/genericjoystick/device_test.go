@@ -252,7 +252,7 @@ func TestEndpointRetirementCannotReplayOldState(t *testing.T) {
 func TestConfigurationFenceRequiresPostEnumerationProducer(t *testing.T) {
 	j := newTestJoystick(t, 12)
 	early, _ := j.acquireProducer()
-	if !j.RetireInputPresentationGeneration(j.InputPresentationGeneration(), time.Now()) {
+	if !j.RetireInputPresentationGenerationForImport(j.InputPresentationGeneration(), time.Now(), true) {
 		t.Fatal("configuration fence refused")
 	}
 	if err := j.publish(early, InputState{X: 32767, Hat: 8}, time.Now()); err == nil {
@@ -269,6 +269,42 @@ func TestConfigurationFenceRequiresPostEnumerationProducer(t *testing.T) {
 	}
 	if got := present(t, j, time.Now()); binary.LittleEndian.Uint16(got[1:]) != 65534 {
 		t.Fatal("post-enumeration producer did not deliver movement")
+	}
+}
+
+func TestNativeReadinessFollowsExactImportLifecycle(t *testing.T) {
+	j := newTestJoystick(t, 12)
+	if j.GetDeviceSpecificArgs()["inputConfigured"] != false {
+		t.Fatal("ready before initial configuration")
+	}
+	old := j.InputPresentationGeneration()
+	if !j.RetireInputPresentationGenerationForImport(old, time.Now(), true) {
+		t.Fatal("configuration refused")
+	}
+	if j.GetDeviceSpecificArgs()["inputConfigured"] != false {
+		t.Fatal("endpoint reset guessed configuration readiness")
+	}
+	j.USBConfigurationChanged(1)
+	if j.GetDeviceSpecificArgs()["inputConfigured"] != true {
+		t.Fatal("not ready after configuration")
+	}
+	current := j.InputPresentationGeneration()
+	if j.RetireInputPresentationGenerationForImport(old, time.Now(), false) {
+		t.Fatal("stale import closed successor")
+	}
+	if j.GetDeviceSpecificArgs()["inputConfigured"] != true {
+		t.Fatal("stale close changed readiness")
+	}
+	j.USBConfigurationChanged(0)
+	if j.GetDeviceSpecificArgs()["inputConfigured"] != false {
+		t.Fatal("ready after unconfiguration")
+	}
+	j.USBConfigurationChanged(1)
+	if !j.RetireInputPresentationGenerationForImport(current, time.Now(), false) {
+		t.Fatal("import close refused")
+	}
+	if j.GetDeviceSpecificArgs()["inputConfigured"] != false {
+		t.Fatal("ready after native import closed")
 	}
 }
 

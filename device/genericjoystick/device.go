@@ -32,6 +32,8 @@ type Joystick struct {
 	pendingAt          time.Time
 	version            uint64
 	buttonCount        int
+	importClosed       bool
+	configured         bool
 	descriptor         usb.Descriptor
 }
 
@@ -82,8 +84,18 @@ func New(o *device.CreateOptions) (*Joystick, error) {
 func (j *Joystick) GetDescriptor() *usb.Descriptor { return &j.descriptor }
 func (j *Joystick) VIIPERDeviceType() string       { return "genericjoystick" }
 func (j *Joystick) GetDeviceSpecificArgs() map[string]any {
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	configured := j.configured && !j.importClosed
 	return map[string]any{"version": ContractVersion, "experimental": true, "buttonCount": j.buttonCount,
+		"contract": "genericjoystick-v1", "inputConfigured": configured,
 		"neutralAxes": []int16{j.neutral.X, j.neutral.Y, j.neutral.Z, j.neutral.Rx, j.neutral.Ry, j.neutral.Rz}}
+}
+
+func (j *Joystick) USBConfigurationChanged(value uint8) {
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	j.configured = value == 1
 }
 
 func (j *Joystick) acquireProducer() (inputpresentation.FixedReportProducerLease, bool) {
@@ -174,10 +186,18 @@ func (j *Joystick) ResolveInputPresentation(c inputpresentation.Claim, outcome i
 	return resolved
 }
 func (j *Joystick) RetireInputPresentationGeneration(g uint64, at time.Time) bool {
+	return j.RetireInputPresentationGenerationForImport(g, at, false)
+}
+
+func (j *Joystick) RetireInputPresentationGenerationForImport(g uint64, at time.Time, adoptSuccessor bool) bool {
 	j.mu.Lock()
 	defer j.mu.Unlock()
 	retired := j.input.RetireInputPresentationGenerationWithBaseline(g, j.neutral, at)
 	if retired {
+		j.importClosed = !adoptSuccessor
+		if !adoptSuccessor {
+			j.configured = false
+		}
 		j.producerActive = false
 		j.pending = nil
 		j.presented = j.neutral
