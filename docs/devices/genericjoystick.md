@@ -101,6 +101,21 @@ with the lab process; the probe only reads.
 
 ## Remaining stages
 
+The DS4Windows feature branch now supplies an isolated Windows lab launcher in
+`utils/GenericJoystickLab`. Its interactive feeder is this repository's
+`examples/genericjoystick-lab`: authenticated literal-loopback API, explicit
+absolute key/options files, allocation and attachment receipts, bounded
+management requests, validated versioned frames, producer disconnect/reconnect,
+and bus cleanup on exit. It cannot install drivers or detach native imports;
+the launcher owns that operation using the private server/bus/device identity.
+
+The packaged lab checks both stick layouts and all four trigger modes against
+the actual DS4Windows mapping policy, using x86/x64 DirectInput and WinMM.
+It preserves released app files and excludes the API password from reports.
+The launcher has simulated success, timeout, failed-stream and foreign-import
+tests. Native attachment and game compatibility still require Windows user
+validation; simulated socket tests are not evidence of native HID enumeration.
+
 1. Record successful Windows HID parsing and enumeration through both APIs,
    including the 32-bit reader, and settle device identity.
 2. Integrate the tested DS4Windows mapper with output lifetime, saved profiles
