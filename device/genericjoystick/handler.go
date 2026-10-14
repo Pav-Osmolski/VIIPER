@@ -1,6 +1,7 @@
 package genericjoystick
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -21,7 +22,7 @@ func (*handler) UpdateMetaState(_ string, _ *usb.Device) error {
 	return fmt.Errorf("genericjoystick has no metadata commands")
 }
 func (*handler) StreamHandler() api.StreamHandlerFunc {
-	return func(conn net.Conn, ptr *usb.Device, _ *slog.Logger) error {
+	return func(conn net.Conn, ptr *usb.Device, logger *slog.Logger) error {
 		if ptr == nil || *ptr == nil {
 			return fmt.Errorf("nil genericjoystick device")
 		}
@@ -35,6 +36,7 @@ func (*handler) StreamHandler() api.StreamHandlerFunc {
 		}
 		defer j.releaseProducer(lease)
 		var frame [ReportSize]byte
+		var lastDiagnostic time.Time
 		for {
 			if _, err := io.ReadFull(conn, frame[:]); err != nil {
 				if err == io.EOF {
@@ -48,6 +50,13 @@ func (*handler) StreamHandler() api.StreamHandlerFunc {
 			}
 			if err := j.publish(lease, state, time.Now()); err != nil {
 				return err
+			}
+			if logger.Enabled(context.Background(), slog.LevelDebug) && time.Since(lastDiagnostic) >= 500*time.Millisecond {
+				j.mu.Lock()
+				snapshot, presented := j.input.Snapshot(), j.presented
+				j.mu.Unlock()
+				logger.Debug("Generic joystick presentation", "published", state, "presented", presented, "scheduler", snapshot)
+				lastDiagnostic = time.Now()
 			}
 		}
 	}
