@@ -17,7 +17,8 @@ reported fix put the second stick on Z/Rz rather than Rx/Ry:
 - [Serious Engine's WinMM input implementation](https://github.com/Croteam-official/Serious-Engine/blob/master/Sources/Engine/Base/Input.cpp)
 
 These are reference behaviours, **not verified compatibility claims for this
-prototype**. Windows enumeration and original-game tests remain pending.
+prototype**. The native Windows synthetic-input lab passed on 2026-10-14;
+physical-controller integration and original-game tests remain pending.
 
 ## Device and contract
 
@@ -113,11 +114,22 @@ The packaged lab checks both stick layouts and all four trigger modes against
 the actual DS4Windows mapping policy, using x86/x64 DirectInput and WinMM.
 It preserves released app files and excludes the API password from reports.
 The launcher has simulated success, timeout, failed-stream and foreign-import
-tests. Native attachment and game compatibility still require Windows user
-validation; simulated socket tests are not evidence of native HID enumeration.
+tests. Revision 4's native Windows report passed all 156 observations across
+eight layout/trigger plans, x86/x64 DirectInput and WinMM, configured neutral,
+producer disconnect and reconnect. Temporary imports were removed without
+cleanup errors. Simulated socket tests alone are not evidence of enumeration;
+this result comes from the user-run USB/IP 0.9.8.1 native attachment lab on
+Windows 10.0.26300.0. It validates the twelve-button synthetic configuration on
+one machine, not physical-controller integration, sixteen-button enumeration,
+force feedback or game compatibility.
 
-1. Record successful Windows HID parsing and enumeration through both APIs,
-   including the 32-bit reader, and settle device identity.
+Report: `20261014-233817-ea0f280a-report.zip`. Tested VIIPER revision:
+`01801558b9c52616afaf145290067c57ad2cbeb3`; matching DS4Windows revision:
+`4e158868809eaa3c60ddb014bb2a4fc3da2e1ea1`. Detailed results are recorded in the
+frontend branch's `docs/directinput-development.md`.
+
+1. Settle production device identity and descriptor caching policy, using the
+   now-validated Windows HID parsing and x86/x64 consumer baseline.
 2. Integrate the tested DS4Windows mapper with output lifetime, saved profiles
    and a gated editor card; verify exact matching backend capability.
 3. Validate NFS Underground 2, Jedi Outcast/Academy and Serious Sam TFE/TSE,
