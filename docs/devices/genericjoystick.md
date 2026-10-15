@@ -177,6 +177,9 @@ independently captured. The preview deliberately bypasses automatic HidHide.
 
 ### Production identity preparation
 
+See [release preparation](../genericjoystick-release-preparation.md) for the
+coordinated backend provenance, packaging and compatibility requirements.
+
 A [pid.codes request](https://github.com/pidcodes/pidcodes.github.com/pull/1317)
 was submitted on 2026-10-15 for one twelve-button descriptor and is **pending
 approval**. Its proposed
