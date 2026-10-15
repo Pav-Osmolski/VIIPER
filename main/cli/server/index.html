@@ -851,6 +851,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#-no-tray" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --no-tray
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-key-file" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1915,6 +1926,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#-no-tray" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --no-tray
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#-key-file" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2134,6 +2156,20 @@ This means when you create a device via the API, it will be immediately availabl
 This behavior can be disabled with <code>--api.auto-attach-local-client=false</code> if you prefer manual control or are running on a remote server.</p>
 </div>
 <h2 id="options">Options</h2>
+<h3 id="-no-tray"><code>--no-tray</code></h3>
+<p>Suppress the tray icon for a supervised background server. The equivalent
+environment variable is <code>VIIPER_NO_TRAY=true</code>. The default remains to show the
+tray. Prerequisite checks, API key handling, listener ownership and shutdown
+behaviour are unchanged. Without the tray, stop the process through its
+supervisor or a termination signal. This option does not install or update
+VIIPER, or alter Windows startup registration.</p>
+<p>On Windows, when neither this flag nor <code>VIIPER_NO_TRAY</code> is set, installed
+startup reads DS4Windows' per-user "Show VIIPER tray icon" preference. Missing
+or invalid preferences keep the icon visible. Explicit flags/environment
+values take priority, including <code>--no-tray=false</code>. Explicit <code>--key-file</code>
+deployments do not implicitly inherit that installed preference; DS4Windows
+portable launches pass their saved choice explicitly. A change applies only
+when VIIPER next starts and does not restart an active server.</p>
 <p><a id="option-key-file"></a></p>
 <h3 id="-key-file"><code>--key-file</code></h3>
 <p>Explicit absolute path to the API password file. Omitting this option retains

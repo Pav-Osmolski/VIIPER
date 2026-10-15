@@ -2039,6 +2039,12 @@ and send/receive them via the device control and feedback stream.</p>
 </ul>
 </li>
 </ul>
+<p>USB output validity flags are resolved inside VIIPER before feedback is
+sent: bit 0 updates rumble, bit 1 updates RGB, and bit 2 updates flashing.
+Other fields retain their last accepted values. This fork preserves the
+seven-byte complete-state format used by DS4Windows and existing clients;
+it does not prepend upstream's additional flags byte. A zero validity mask
+leaves all fields unchanged; sending zero motors with bit 0 set stops rumble.</p>
 <p>See <code>/device/dualshock4/inputstate.go</code> for the <code>OutputState</code> wire definition.</p>
 <h2 id="reference">Reference</h2>
 <h3 id="button-constants">Button Constants</h3>
@@ -2150,7 +2156,7 @@ to avoid float serialization differences across client languages.</p>
 <p>Constants (see <code>/device/dualshock4/const.go</code>):</p>
 <ul>
 <li><code>GyroCountsPerDps = 16</code></li>
-<li><code>AccelCountsPerMS2 = 512</code></li>
+<li><code>AccelCountsPerMS2 = 8192 / 9.81</code> (approximately 835.07)</li>
 </ul>
 <p>Gyro (degrees/second):</p>
 <div class="highlight"><pre><span></span><code>raw_gyro = round(gyro_dps * GyroCountsPerDps)
@@ -2163,10 +2169,10 @@ accel_ms2 = raw_accel / AccelCountsPerMS2
 <p>With the default scales:</p>
 <ul>
 <li>Gyro: resolution <code>0.0625 deg/s</code>, max approx <code>2048 deg/s</code></li>
-<li>Accelerometer: resolution approx <code>0.00195 m/s2</code>, max approx <code>64 m/s2</code></li>
+<li>Accelerometer: resolution approx <code>0.0012 m/s2</code>, max approx <code>39 m/s2</code></li>
 </ul>
 <p>On device creation, VIIPER initializes the accelerometer to a controller lying
-flat with gravity downwards (<code>AccelZ = -5023</code>, i.e. <code>round(-9.81 * 512)</code>).</p>
+flat with gravity downwards (<code>AccelZ = -8192</code>, i.e. -1 g at 8192 counts/g).</p>
 <p>Helpers are in <code>/device/dualshock4/helpers.go</code>.</p>
 </div>
 <div class="tabbed-block">
