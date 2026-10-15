@@ -4,7 +4,9 @@ Curated release history inherited by the Pav-Osmolski VIIPER fork.
 These records describe their original releases, not a promise that every
 upstream asset is republished here. For DS4Windows, use its bundled backend.
 
-## Unreleased
+## [0.1.11](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.11) — 2026-10-15
+
+- Paired with DS4Windows 5.0.25 after successful maintainer testing of the combined package.
 
 - Respect DS4Windows' saved per-user tray visibility at installed Windows startup without rewriting startup tasks. Explicit CLI/environment values take priority; explicit-key portable/lab deployments remain isolated unless they pass a choice.
 
