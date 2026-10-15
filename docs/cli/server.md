@@ -40,6 +40,15 @@ The server exposes two interfaces:
 
 ## Options
 
+### `--no-tray`
+
+Suppress the tray icon for a supervised background server. The equivalent
+environment variable is `VIIPER_NO_TRAY=true`. The default remains to show the
+tray. Prerequisite checks, API key handling, listener ownership and shutdown
+behaviour are unchanged. Without the tray, stop the process through its
+supervisor or a termination signal. This option does not install or update
+VIIPER, or alter Windows startup registration.
+
 <a id="option-key-file"></a>
 
 ### `--key-file`

@@ -3,6 +3,7 @@ package mouse
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/Alia5/VIIPER/device"
@@ -16,6 +17,7 @@ import (
 type Mouse struct {
 	inputCh        chan InputState
 	inputPublishMu sync.Mutex
+	buttons        uint8
 	descriptor     usb.Descriptor
 }
 
@@ -40,6 +42,7 @@ func New(o *device.CreateOptions) (*Mouse, error) {
 func (m *Mouse) UpdateInputState(state InputState) {
 	m.inputPublishMu.Lock()
 	defer m.inputPublishMu.Unlock()
+	m.buttons = state.Buttons
 
 	select {
 	case <-m.inputCh:
@@ -52,17 +55,21 @@ func (m *Mouse) HandleTransfer(ctx context.Context, ep uint32, dir uint32, out [
 	if dir == usbip.DirIn {
 		switch ep {
 		case 1: // 0x81 - main input reports
+			if errors.Is(ctx.Err(), context.Canceled) {
+				return nil
+			}
 			select {
 			case <-ctx.Done():
+				if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+					m.inputPublishMu.Lock()
+					state := InputState{Buttons: m.buttons}
+					m.inputPublishMu.Unlock()
+					return state.BuildReport()
+				}
 				return nil
 			case st := <-m.inputCh:
-				if st.DX != 0 || st.DY != 0 || st.Wheel != 0 || st.Pan != 0 {
-					zeroed := InputState{Buttons: st.Buttons}
-					select {
-					case m.inputCh <- zeroed:
-					default:
-					}
-				}
+				// Relative deltas are delivered once. At idle the deadline path
+				// supplies current buttons and zero deltas, avoiding scheduler replay.
 				return st.BuildReport()
 			}
 		default:

@@ -54,6 +54,13 @@ the native DualShock 4 USB speaker and microphone interfaces.
         - LED Color: LedRed, LedGreen, LedBlue: uint8 each (3 bytes), 0-255 per channel
         - LED Flash: FlashOn, FlashOff: uint8 each (2 bytes), units of 2.5ms per value
 
+    USB output validity flags are resolved inside VIIPER before feedback is
+    sent: bit 0 updates rumble, bit 1 updates RGB, and bit 2 updates flashing.
+    Other fields retain their last accepted values. This fork preserves the
+    seven-byte complete-state format used by DS4Windows and existing clients;
+    it does not prepend upstream's additional flags byte. A zero validity mask
+    leaves all fields unchanged; sending zero motors with bit 0 set stops rumble.
+
     See `/device/dualshock4/inputstate.go` for the `OutputState` wire definition.
 
     ## Reference
@@ -106,7 +113,7 @@ the native DualShock 4 USB speaker and microphone interfaces.
     Constants (see `/device/dualshock4/const.go`):
 
     - `GyroCountsPerDps = 16`
-    - `AccelCountsPerMS2 = 512`
+    - `AccelCountsPerMS2 = 8192 / 9.81` (approximately 835.07)
 
     Gyro (degrees/second):
 
@@ -121,10 +128,10 @@ the native DualShock 4 USB speaker and microphone interfaces.
     With the default scales:
 
     - Gyro: resolution `0.0625 deg/s`, max approx `2048 deg/s`
-    - Accelerometer: resolution approx `0.00195 m/s2`, max approx `64 m/s2`
+    - Accelerometer: resolution approx `0.0012 m/s2`, max approx `39 m/s2`
 
     On device creation, VIIPER initializes the accelerometer to a controller lying
-    flat with gravity downwards (`AccelZ = -5023`, i.e. `round(-9.81 * 512)`).
+    flat with gravity downwards (`AccelZ = -8192`, i.e. -1 g at 8192 counts/g).
 
     Helpers are in `/device/dualshock4/helpers.go`.
 

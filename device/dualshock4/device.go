@@ -216,7 +216,7 @@ func (d *DualShock4) tryAdmitFramedOutput(data []byte) (handled, accepted bool) 
 	if len(data) < 11 || data[0] != ReportIDOutput {
 		return true, false
 	}
-	feedback := parseOutputReport(data)
+	feedback := mergeOutputReport(d.outputState, data)
 	if !d.transportOutputFunc(feedback) {
 		return true, false
 	}
@@ -389,8 +389,8 @@ func (d *DualShock4) HandleTransfer(ctx context.Context, ep uint32, dir uint32, 
 			return nil
 		}
 		if len(out) >= 11 && out[0] == ReportIDOutput {
-			feedback := parseOutputReport(out)
 			d.mtx.Lock()
+			feedback := mergeOutputReport(d.outputState, out)
 			d.outputState = feedback
 			d.outputSeen = true
 			outputFunc := d.outputFunc
@@ -550,8 +550,8 @@ func (d *DualShock4) HandleControl(bmRequestType, bRequest uint8, wValue, wIndex
 				if handled, accepted := d.tryAdmitFramedOutput(data); handled {
 					return nil, accepted
 				}
-				feedback := parseOutputReport(data)
 				d.mtx.Lock()
+				feedback := mergeOutputReport(d.outputState, data)
 				d.outputState = feedback
 				d.outputSeen = true
 				outputFunc := d.outputFunc
@@ -655,6 +655,23 @@ func parseOutputReport(data []byte) OutputState {
 		FlashOn:     data[9],
 		FlashOff:    data[10],
 	}
+}
+
+// USB flags identify valid field groups. Resolve the partial command while
+// holding mtx, before admission/commit, so every existing seven-byte client
+// receives a complete state. Never change the established wire layout.
+func mergeOutputReport(previous OutputState, data []byte) OutputState {
+	update := parseOutputReport(data)
+	if data[1]&0x01 != 0 {
+		previous.RumbleSmall, previous.RumbleLarge = update.RumbleSmall, update.RumbleLarge
+	}
+	if data[1]&0x02 != 0 {
+		previous.LedRed, previous.LedGreen, previous.LedBlue = update.LedRed, update.LedGreen, update.LedBlue
+	}
+	if data[1]&0x04 != 0 {
+		previous.FlashOn, previous.FlashOff = update.FlashOn, update.FlashOff
+	}
+	return previous
 }
 
 func (d *DualShock4) featureReportTelemetry() []byte {

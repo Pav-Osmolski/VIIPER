@@ -24,6 +24,7 @@ type Server struct {
 	APIServerConfig   api.ServerConfig `embed:"" prefix:"api."`
 	ConnectionTimeout time.Duration    `help:"ConnectionTimeout operation timeout" default:"30s" env:"VIIPER_CONNECTION_TIMEOUT"`
 	KeyFile           *string          `help:"Explicit absolute API password file; errors never fall back to the default key file"`
+	NoTray            bool             `help:"Disable the tray icon" env:"VIIPER_NO_TRAY"`
 }
 
 // Run is called by Kong when the server command is executed.
@@ -66,7 +67,7 @@ func (s *Server) StartServer(ctx context.Context, logger *slog.Logger, rawLogger
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
-	stopTray := tray.Run(ctx, cancel)
+	stopTray := startServerTray(ctx, cancel, s.NoTray, tray.Run)
 	defer func() {
 		cancel()
 		stopTray()
@@ -136,6 +137,15 @@ func (s *Server) StartServer(ctx context.Context, logger *slog.Logger, rawLogger
 			}
 			return apiSrv.Close, nil
 		})
+}
+
+// Keep tray ownership optional without changing listener or prerequisite ownership.
+func startServerTray(ctx context.Context, cancel context.CancelFunc, noTray bool,
+	start func(context.Context, func()) func()) func() {
+	if noTray {
+		return func() {}
+	}
+	return start(ctx, cancel)
 }
 
 // The cancellation boundary precedes key creation as well as helper execution.
