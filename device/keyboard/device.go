@@ -3,6 +3,7 @@ package keyboard
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/Alia5/VIIPER/device"
@@ -15,6 +16,7 @@ import (
 type Keyboard struct {
 	inputCh        chan InputState
 	inputPublishMu sync.Mutex
+	inputState     InputState
 	stateMu        sync.Mutex
 	ledState       uint8
 	ledSeen        bool
@@ -75,6 +77,7 @@ func (k *Keyboard) GetLEDState() LEDState {
 func (k *Keyboard) UpdateInputState(state InputState) {
 	k.inputPublishMu.Lock()
 	defer k.inputPublishMu.Unlock()
+	k.inputState = state
 
 	select {
 	case <-k.inputCh:
@@ -88,8 +91,17 @@ func (k *Keyboard) HandleTransfer(ctx context.Context, ep uint32, dir uint32, ou
 	if dir == usbip.DirIn {
 		switch ep {
 		case 1: // 0x81 - keyboard input reports
+			if errors.Is(ctx.Err(), context.Canceled) {
+				return nil
+			}
 			select {
 			case <-ctx.Done():
+				if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+					k.inputPublishMu.Lock()
+					state := k.inputState
+					k.inputPublishMu.Unlock()
+					return state.BuildReport()
+				}
 				return nil
 			case st := <-k.inputCh:
 				return st.BuildReport()

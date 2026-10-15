@@ -133,8 +133,8 @@ const (
 	GyroCountsPerDps = 16.0
 
 	// AccelCountsPerMS2 is the fixed-point scale factor for m/s².
-	// resolution is ~0.00195 m/s² and range is about +-64 m/s² (~+-6.5 g).
-	AccelCountsPerMS2 = 512.0
+	// resolution is ~0.0012 m/s² and range is about +-39 m/s² (+-4 g).
+	AccelCountsPerMS2 = 8192.0 / StandardGravityMS2
 
 	StandardGravityMS2 = 9.81
 )
@@ -143,8 +143,8 @@ const (
 const (
 	DefaultAccelXRaw int16 = 0
 	DefaultAccelYRaw int16 = 0
-	// -StandardGravityMS2 * AccelCountsPerMS2 = (-9.81 * 512) = -5023
-	DefaultAccelZRaw int16 = -5023
+	// One g at the scale advertised by the calibration report.
+	DefaultAccelZRaw int16 = -8192
 )
 
 const (

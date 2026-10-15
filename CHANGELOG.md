@@ -4,6 +4,18 @@ Curated release history inherited by the Pav-Osmolski VIIPER fork.
 These records describe their original releases, not a promise that every
 upstream asset is republished here. For DS4Windows, use its bundled backend.
 
+## [0.1.11](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.11) — 2026-10-15
+
+- Paired with DS4Windows 5.0.25 after successful maintainer testing of the combined package.
+
+- Respect DS4Windows' saved per-user tray visibility at installed Windows startup without rewriting startup tasks. Explicit CLI/environment values take priority; explicit-key portable/lab deployments remain isolated unless they pass a choice.
+
+- Match virtual DS4 acceleration defaults and conversion helpers to the existing 8192-count/g calibration.
+- Honour DS4 USB rumble, RGB and flash validity flags while preserving the seven-byte complete-state feedback protocol used by DS4Windows and existing clients. Fields not selected by a partial command retain their last accepted values.
+- Retain keyboard keys and mouse buttons during idle input polls without replaying relative mouse movement or wheel deltas.
+- Add optional `server --no-tray` / `VIIPER_NO_TRAY` operation, preserving normal startup ownership and tray behaviour by default.
+- Update the Go toolchain and existing shared dependencies to the reviewed upstream versions. Keep DS4Windows-managed installation, updates and fork-specific USB/IP scheduling.
+
 ## [0.1.10](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.10) — 2026-10-11
 
 - Published after the maintainer successfully tested the combined DS4Windows 5.0.15 package.

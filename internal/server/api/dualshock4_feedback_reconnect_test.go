@@ -120,7 +120,7 @@ func writeDS4OverlapMicrophone(t *testing.T, stream *viiperclient.DeviceStream, 
 
 func admitDS4OverlapFeedback(t *testing.T, ds4 *dualshock4.DualShock4, small, large, red byte) {
 	t.Helper()
-	report := []byte{dualshock4.ReportIDOutput, 0, 0, 0, small, large, red, 0, 0, 0, 0}
+	report := []byte{dualshock4.ReportIDOutput, 7, 0, 0, small, large, red, 0, 0, 0, 0}
 	handled, accepted := ds4.TryHandleOutputCommand(dualshock4.EndpointOut, [8]byte{}, report)
 	require.True(t, handled, "The actual API framed handler must own admission.")
 	require.True(t, accepted)
