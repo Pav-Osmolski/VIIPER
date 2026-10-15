@@ -430,7 +430,7 @@ func bindAuditWriter(t *testing.T, dev *DualShock4, writer *dualShock4OutputWrit
 }
 
 func auditOutputReport(small, large, red byte) []byte {
-	return []byte{ReportIDOutput, 0, 0, 0, small, large, red, 0, 0, 0, 0}
+	return []byte{ReportIDOutput, 7, 0, 0, small, large, red, 0, 0, 0, 0}
 }
 
 func auditOutputSetup(report []byte) [8]byte {
