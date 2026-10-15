@@ -16,9 +16,11 @@ reported fix put the second stick on Z/Rz rather than Rx/Ry:
 - [Microsoft's trigger-centre explanation](https://learn.microsoft.com/en-us/windows/win32/xinput/xinput-and-directinput)
 - [Serious Engine's WinMM input implementation](https://github.com/Croteam-official/Serious-Engine/blob/master/Sources/Engine/Base/Input.cpp)
 
-These are reference behaviours, **not verified compatibility claims for this
-prototype**. The native Windows synthetic-input lab passed on 2026-10-14;
-physical-controller integration and original-game tests remain pending.
+These are reference behaviours, **not verified compatibility claims for those
+games**. The native Windows synthetic-input lab passed on 2026-10-14. A USB
+DualSense physical preview and two games were subsequently tested; see the
+dated results below. The games named in the original feature request remain
+unverified.
 
 ## Device and contract
 
@@ -128,14 +130,16 @@ Report: `20261014-233817-ea0f280a-report.zip`. Tested VIIPER revision:
 `4e158868809eaa3c60ddb014bb2a4fc3da2e1ea1`. Detailed results are recorded in the
 frontend branch's `docs/directinput-development.md`.
 
-1. Settle production device identity and descriptor caching policy, using the
-   now-validated Windows HID parsing and x86/x64 consumer baseline.
-2. Integrate the tested DS4Windows mapper with output lifetime, saved profiles
-   and a gated editor card; verify exact matching backend capability.
-3. Validate NFS Underground 2, Jedi Outcast/Academy and Serious Sam TFE/TSE,
-   recording game edition, patches, bindings and controller configuration.
-4. Package a matched preview and invite user testing. Force feedback and
-   arbitrary descriptor customization are separate future work.
+The synthetic lab established the native baseline at its recorded revisions.
+Subsequent physical-preview evidence is recorded below. Remaining release work
+is tracked in the frontend's
+[release checklist](https://github.com/Pav-Osmolski/DS4Windows/blob/feature/directinput-output/docs/directinput-release-checklist.md):
+production identity, normal-mode integration and built-in HidHide validation,
+then matched release packaging. NFS Underground 2, Jedi Outcast/Academy and
+Serious Sam TFE/TSE still need tests recording edition, patches, bindings and
+controller configuration. Force feedback and arbitrary descriptor customization
+are separate future work.
+
 ## DS4Windows portable physical-controller preview
 
 The corresponding DS4Windows feature branch now exposes this output only in its
@@ -146,8 +150,35 @@ only after an accepted USB SET_CONFIGURATION(1). Configuration zero and exact
 native import closure clear readiness; stale import generations cannot clear a
 successor's state. Resetting an endpoint alone does not establish configuration.
 
-The first physical preview uses twelve buttons and the existing validated wire
-contract. It adds no feedback, audio or production identity allocation. Native
-synthetic validation remains the recorded evidence; real controllers and old
-games are the next user-run validation step. See DS4Windows's
+The physical preview uses twelve buttons and the validated wire contract. It
+adds no feedback, audio or production identity allocation. See DS4Windows's
 `utils/GenericJoystickPreview/README.txt` for the isolated launcher and test plan.
+
+### Owner-run results, 2026-10-15
+
+The owner confirmed all eight layout/trigger combinations with a USB DualSense,
+saved settings, inversions/button thresholds, unplug/reconnect and Stop/Start.
+The r2 preview paired VIIPER `bd8f6e21215b471015ca442945c2c7fc90f1cab4`
+with DS4Windows `6c2760c100f04e515ec7458c0b7db565ff26c8e9`.
+
+| Game | DS4Windows configuration | User result |
+| --- | --- | --- |
+| BeamNG.drive 0.39.4.0.20972 | Racing + Full range; X steering, Rz throttle, Z brake | Hardware response, bindings and driving passed. |
+| FlatOut 2, current Steam installation; exact build unrecorded | Legacy + Centred; X steering, Ry throttle, Rx brake | Driving with manual and automatic transmission passed. Stick menu navigation felt awkward at 0% in-game dead zone. |
+
+The physical matrix report `20261015-123537-0ff0761f-report.zip` recorded fifteen
+attachments/removals and clean cleanup. The play-session report
+`20261015-124824-f68ac364-report.zip` recorded 3,570 sampled input states,
+three closed sessions, no backend WARN/ERROR events and no remaining imports.
+Gameplay success is the owner's observation; backend logs cannot prove it.
+These results cover one machine and the tested game installations, not all
+versions or original unpatched releases. Steam Input/HidHide state was not
+independently captured. The preview deliberately bypasses automatic HidHide.
+
+### Production identity preparation
+
+A [pid.codes request draft](../identity-request/README.md) is prepared for one
+twelve-button descriptor. It has **not been submitted or approved**. Its proposed
+`1209:D10C` must not be used until assigned. The sixteen-button variant remains
+lab-only, needs native validation and must have a separate identity. Keep normal
+DS4Windows activation disabled until identity and matched packaging are ready.
