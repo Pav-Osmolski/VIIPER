@@ -196,6 +196,18 @@ caller-supplied IDs; callers must avoid duplicates. DS4Windows rejects duplicate
 physical identities and verifies the returned ID before opening/reopening input.
 The HID report layout and preview VID/PIDs are unchanged. A new serial can require
 rebinding existing games. Stable serials do not guarantee stable WinMM slot
-numbers or game-specific saved bindings. Native two-device Windows validation
-of this identity extension is pending; the matched synthetic lab tests removal,
-recreation and reversed device creation order without physical controllers.
+numbers or game-specific saved bindings. The completed two-device owner lab (r4 report `20261015-165810-0ed8a66d`)
+validated input isolation, producer reconnect, recreation and reversed creation
+order in x86/x64 DirectInput and WinMM. It retained two GUID-persistence failures:
+removing A moved B from joystick slot 1 to 0 and changed B's GUID in enumeration
+and GetDeviceInfo. B's serial/path stayed stable; restoring A restored the
+original GUIDs. Cleanup was clean. Stable multi-controller game bindings remain
+unverified.
+
+The USB/IP 0.9.8.1 serial-override fix
+[a2a1159](https://github.com/vadimgrn/usbip-win2/commit/a2a1159763088c85d940078cfa6491f38540953d)
+was not in a published successor release as of 2026-10-15. VIIPER leaves the
+transport override empty and serves its own serial, but later serial-query
+success does not establish correct initial Windows PnP enumeration. Retest the
+same two-device scenario when a packaged fixed driver is available before
+ruling out an effect from its shared request-completion changes.
