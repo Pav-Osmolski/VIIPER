@@ -6,6 +6,8 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
+- Respect DS4Windows' saved per-user tray visibility at installed Windows startup without rewriting startup tasks. Explicit CLI/environment values take priority; explicit-key portable/lab deployments remain isolated unless they pass a choice.
+
 - Match virtual DS4 acceleration defaults and conversion helpers to the existing 8192-count/g calibration.
 - Honour DS4 USB rumble, RGB and flash validity flags while preserving the seven-byte complete-state feedback protocol used by DS4Windows and existing clients. Fields not selected by a partial command retain their last accepted values.
 - Retain keyboard keys and mouse buttons during idle input polls without replaying relative mouse movement or wheel deltas.

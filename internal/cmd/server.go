@@ -24,7 +24,7 @@ type Server struct {
 	APIServerConfig   api.ServerConfig `embed:"" prefix:"api."`
 	ConnectionTimeout time.Duration    `help:"ConnectionTimeout operation timeout" default:"30s" env:"VIIPER_CONNECTION_TIMEOUT"`
 	KeyFile           *string          `help:"Explicit absolute API password file; errors never fall back to the default key file"`
-	NoTray            bool             `help:"Disable the tray icon" env:"VIIPER_NO_TRAY"`
+	NoTray            *bool            `help:"Disable the tray icon (otherwise use the DS4Windows preference)" env:"VIIPER_NO_TRAY"`
 }
 
 // Run is called by Kong when the server command is executed.
@@ -67,7 +67,8 @@ func (s *Server) StartServer(ctx context.Context, logger *slog.Logger, rawLogger
 	}
 
 	ctx, cancel := context.WithCancel(ctx)
-	stopTray := startServerTray(ctx, cancel, s.NoTray, tray.Run)
+	stopTray := startServerTray(ctx, cancel,
+		serverTrayDisabled(s.NoTray, s.KeyFile != nil, savedTrayVisible), tray.Run)
 	defer func() {
 		cancel()
 		stopTray()
@@ -146,6 +147,15 @@ func startServerTray(ctx context.Context, cancel context.CancelFunc, noTray bool
 		return func() {}
 	}
 	return start(ctx, cancel)
+}
+
+// Explicit CLI/environment choices win. Explicit-key deployments (including
+// portable labs) never inherit the installed user's preference implicitly.
+func serverTrayDisabled(explicit *bool, explicitKey bool, readVisible func() bool) bool {
+	if explicit != nil {
+		return *explicit
+	}
+	return !explicitKey && !readVisible()
 }
 
 // The cancellation boundary precedes key creation as well as helper execution.

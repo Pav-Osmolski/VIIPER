@@ -49,6 +49,14 @@ behaviour are unchanged. Without the tray, stop the process through its
 supervisor or a termination signal. This option does not install or update
 VIIPER, or alter Windows startup registration.
 
+On Windows, when neither this flag nor `VIIPER_NO_TRAY` is set, installed
+startup reads DS4Windows' per-user "Show VIIPER tray icon" preference. Missing
+or invalid preferences keep the icon visible. Explicit flags/environment
+values take priority, including `--no-tray=false`. Explicit `--key-file`
+deployments do not implicitly inherit that installed preference; DS4Windows
+portable launches pass their saved choice explicitly. A change applies only
+when VIIPER next starts and does not restart an active server.
+
 <a id="option-key-file"></a>
 
 ### `--key-file`
