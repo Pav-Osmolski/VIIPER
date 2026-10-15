@@ -183,3 +183,19 @@ approval**. Its proposed
 `1209:D10C` must not be used until assigned. The sixteen-button variant remains
 lab-only, needs native validation and must have a separate identity. Keep normal
 DS4Windows activation disabled until identity and matched packaging are ready.
+
+### Optional stable instance identity
+
+Creation accepts `instanceId`: exactly 32 hexadecimal digits, normalized to
+uppercase and echoed in device-specific metadata. USB serials are now
+`VIIPER-GJ1-<instanceId>`. Omitting the field generates a random 128-bit identity,
+so independent default devices do not share a serial. To preserve identity on
+recreation, clients must supply the same ID for the same logical controller and
+different IDs for different controllers. The backend does not globally reserve
+caller-supplied IDs; callers must avoid duplicates. DS4Windows rejects duplicate
+physical identities and verifies the returned ID before opening/reopening input.
+The HID report layout and preview VID/PIDs are unchanged. A new serial can require
+rebinding existing games. Stable serials do not guarantee stable WinMM slot
+numbers or game-specific saved bindings. Native two-device Windows validation
+of this identity extension is pending; the matched synthetic lab tests removal,
+recreation and reversed device creation order without physical controllers.

@@ -2,6 +2,8 @@ package genericjoystick
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -20,6 +22,7 @@ type CreateOptions struct {
 	Experimental bool    `json:"experimental"`
 	ButtonCount  int     `json:"buttonCount"`
 	NeutralAxes  []int16 `json:"neutralAxes,omitempty"`
+	InstanceID   string  `json:"instanceId,omitempty"`
 }
 
 type Joystick struct {
@@ -34,6 +37,7 @@ type Joystick struct {
 	buttonCount        int
 	importClosed       bool
 	configured         bool
+	instanceID         string
 	descriptor         usb.Descriptor
 }
 
@@ -59,6 +63,17 @@ func New(o *device.CreateOptions) (*Joystick, error) {
 	if o.IDVendor != nil || o.IDProduct != nil {
 		return nil, fmt.Errorf("experimental joystick identity cannot be overridden")
 	}
+	instanceID := strings.ToUpper(args.InstanceID)
+	if instanceID == "" {
+		var identity [16]byte
+		if _, err := io.ReadFull(rand.Reader, identity[:]); err != nil {
+			return nil, fmt.Errorf("create joystick instance identity: %w", err)
+		}
+		instanceID = strings.ToUpper(hex.EncodeToString(identity[:]))
+	}
+	if decoded, err := hex.DecodeString(instanceID); err != nil || len(decoded) != 16 {
+		return nil, fmt.Errorf("instanceId must contain exactly 32 hexadecimal characters")
+	}
 	neutral := *NewInputState()
 	if len(args.NeutralAxes) != 0 {
 		if len(args.NeutralAxes) != 6 {
@@ -78,7 +93,7 @@ func New(o *device.CreateOptions) (*Joystick, error) {
 		return nil, err
 	}
 	return &Joystick{input: input, neutral: neutral, presented: neutral, version: 1,
-		buttonCount: args.ButtonCount, descriptor: makeDescriptor(args.ButtonCount)}, nil
+		buttonCount: args.ButtonCount, instanceID: instanceID, descriptor: makeDescriptor(args.ButtonCount, instanceID)}, nil
 }
 
 func (j *Joystick) GetDescriptor() *usb.Descriptor { return &j.descriptor }
@@ -88,7 +103,7 @@ func (j *Joystick) GetDeviceSpecificArgs() map[string]any {
 	defer j.mu.Unlock()
 	configured := j.configured && !j.importClosed
 	return map[string]any{"version": ContractVersion, "experimental": true, "buttonCount": j.buttonCount,
-		"contract": "genericjoystick-v1", "inputConfigured": configured,
+		"contract": "genericjoystick-v1", "inputConfigured": configured, "instanceId": j.instanceID,
 		"neutralAxes": []int16{j.neutral.X, j.neutral.Y, j.neutral.Z, j.neutral.Rx, j.neutral.Ry, j.neutral.Rz}}
 }
 

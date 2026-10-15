@@ -8,7 +8,7 @@ import (
 // Experimental IDs are deliberately distinct from vJoy and real controllers.
 // They are unallocated laboratory identities, NOT assigned production USB IDs.
 // A release must settle an appropriate identity before removing the opt-in.
-func makeDescriptor(buttonCount int) usb.Descriptor {
+func makeDescriptor(buttonCount int, instanceID string) usb.Descriptor {
 	items := []hid.Item{
 		hid.ReportID{ID: ContractVersion},
 		hid.Usage{Usage: hid.UsageX}, hid.Usage{Usage: hid.UsageY},
@@ -52,6 +52,6 @@ func makeDescriptor(buttonCount int) usb.Descriptor {
 			},
 			Endpoints: []usb.EndpointDescriptor{{BEndpointAddress: 0x81, BMAttributes: 3, WMaxPacketSize: ReportSize, BInterval: 4}},
 		}},
-		Strings: map[uint8]string{0: "\u0409", 1: "VIIPER", 2: "VIIPER Experimental Legacy Joystick", 3: "genericjoystick-v1"},
+		Strings: map[uint8]string{0: "\u0409", 1: "VIIPER", 2: "VIIPER Experimental Legacy Joystick", 3: "VIIPER-GJ1-" + instanceID},
 	}
 }
