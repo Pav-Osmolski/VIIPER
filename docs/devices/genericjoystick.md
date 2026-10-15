@@ -177,8 +177,9 @@ independently captured. The preview deliberately bypasses automatic HidHide.
 
 ### Production identity preparation
 
-A [pid.codes request draft](../identity-request/README.md) is prepared for one
-twelve-button descriptor. It has **not been submitted or approved**. Its proposed
+A [pid.codes request](https://github.com/pidcodes/pidcodes.github.com/pull/1317)
+was submitted on 2026-10-15 for one twelve-button descriptor and is **pending
+approval**. Its proposed
 `1209:D10C` must not be used until assigned. The sixteen-button variant remains
 lab-only, needs native validation and must have a separate identity. Keep normal
 DS4Windows activation disabled until identity and matched packaging are ready.

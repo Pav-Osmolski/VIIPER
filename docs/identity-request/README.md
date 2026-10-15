@@ -1,10 +1,11 @@
-# Proposed pid.codes request — not submitted or assigned
+# pid.codes request — submitted, allocation pending
 
-Prepared on 2026-10-15 for the twelve-button generic joystick in this fork.
+Prepared and submitted on 2026-10-15 for the twelve-button generic joystick in
+this fork: [pid.codes PR #1317](https://github.com/pidcodes/pidcodes.github.com/pull/1317).
 **1209:D10C is a request candidate, not an allocated identity.** Do not put it in
 the descriptor or remove the DS4Windows portable-lab restriction before approval.
 
-The two `index.md` files below are ready to copy into a fork of
+The two `index.md` files below were submitted through a fork of
 [pidcodes/pidcodes.github.com](https://github.com/pidcodes/pidcodes.github.com):
 
 - `org/Pav-Osmolski/index.md`
@@ -14,7 +15,7 @@ The proposed owner is the maintainer of this fork, not a claim to represent
 upstream VIIPER contributors. The requested license matches this fork's server
 and device implementation. Generated client libraries have separate notices.
 
-## Submission draft
+## Submitted request text
 
 Title: **Request 1209:D10C for VIIPER Generic Joystick (12 buttons)**
 
