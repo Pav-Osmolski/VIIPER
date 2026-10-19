@@ -282,6 +282,18 @@ func (s *Server) handleUrbStream(conn net.Conn, dev usb.Device) error {
 			if admission, ok := dev.(usb.OutputCommandAdmissionDevice); ok {
 				var commandSetup [8]byte
 				copy(commandSetup[:], setup)
+				if paced, ok := dev.(usb.PacedOutputCommandAdmissionDevice); ok {
+					if serviceEndpoint, handled := paced.OutputCommandServiceEndpoint(uint8(ep), commandSetup, outPayload); handled {
+						if schedulers.enqueueNativeOutput(seq, xferLen, outPayload, uint8(ep), commandSetup, serviceEndpoint) {
+							continue
+						}
+						responseScratch = buildRetSubmitPacket(responseScratch, seq, errNoSpace, 0, nil, nil, false)
+						if err := responses.write(responseScratch, true, time.Now()); err != nil {
+							return err
+						}
+						continue
+					}
+				}
 				if handled, accepted := admission.TryHandleOutputCommand(uint8(ep), commandSetup, outPayload); handled {
 					status, actualLength := int32(0), uint32(len(outPayload))
 					if !accepted {

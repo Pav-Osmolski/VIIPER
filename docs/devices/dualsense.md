@@ -147,6 +147,28 @@ epoch, peak strengthening couples only that trigger's status byte and effect
 nibble; equal-analog settling such as L2 `28` to `29` is preserved before
 release without turning normal mechanical progression into a stale FIFO.
 
+## Native HID output timing
+
+Native HID interrupt OUT uses a bounded, ordered endpoint worker. Its service
+interval is derived from the virtual endpoint descriptor and USB speed; it is
+not inferred from physical input arrival frequency. The current high-speed
+DualSense descriptor advertises 1 ms input and 4 ms output opportunities.
+Different advertised output intervals select the corresponding service cadence.
+
+The DualSense device policy also routes native HID output `SET_REPORT` commands
+through this same command worker so alternating interrupt/EP0 writes cannot
+bypass ordering or flood the downstream controller with TCP-speed completions.
+This is a shared native-command policy, not a claim that USB control transfers
+have an interrupt `bInterval`. Enumeration, feature requests, input and ISO audio
+retain their independent paths.
+
+Queued reports are copied once into fixed-capacity slots, with payload bounded
+by the HID endpoint capacity. Cancellation/reset before admission has no device
+side effect; successful admission cannot subsequently be reported as unlinked.
+A full worker/device queue returns an explicit error and zero actual length,
+never a false success. Distinct changes and final stops remain ordered. No
+latest-state merging, gain changes or added audio buffering are introduced here.
+
 ## Feedback state
 
 The 474-byte V5 feedback object contains:
