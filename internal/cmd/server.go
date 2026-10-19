@@ -201,7 +201,7 @@ func runOwnedServers(ctx context.Context, serveUSB func() error, usbReady <-chan
 		// original startup/serve error rather than replacing it with cleanup.
 		_ = closeUSB()
 		if !usbJoined {
-			<-usbErrCh
+			_ = <-usbErrCh
 		}
 	}()
 	select {

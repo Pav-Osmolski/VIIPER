@@ -1378,7 +1378,8 @@ func (d *DualSense) TryHandleOutputCommand(endpoint uint8,
 	return false, false
 }
 
-// Native SET_REPORT and interrupt output feed the same controller-state lane.
+// OutputCommandServiceEndpoint routes native SET_REPORT and interrupt output
+// through the same controller-state lane.
 // The virtual HID OUT descriptor advertises a 4ms opportunity. Completing
 // these writes at TCP speed lets a synchronous game flood downstream physical
 // output with a burst which a real USB controller could not acknowledge.
