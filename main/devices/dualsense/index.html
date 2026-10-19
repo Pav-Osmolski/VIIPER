@@ -1408,6 +1408,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#native-hid-output-timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Native HID output timing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#feedback-state" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1810,6 +1821,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#native-hid-output-timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Native HID output timing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#feedback-state" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2185,6 +2207,24 @@ zero-crossing transition carries its complete metadata snapshot. In a trigger
 epoch, peak strengthening couples only that trigger's status byte and effect
 nibble; equal-analog settling such as L2 <code>28</code> to <code>29</code> is preserved before
 release without turning normal mechanical progression into a stale FIFO.</p>
+<h2 id="native-hid-output-timing">Native HID output timing</h2>
+<p>Native HID interrupt OUT uses a bounded, ordered endpoint worker. Its service
+interval is derived from the virtual endpoint descriptor and USB speed; it is
+not inferred from physical input arrival frequency. The current high-speed
+DualSense descriptor advertises 1 ms input and 4 ms output opportunities.
+Different advertised output intervals select the corresponding service cadence.</p>
+<p>The DualSense device policy also routes native HID output <code>SET_REPORT</code> commands
+through this same command worker so alternating interrupt/EP0 writes cannot
+bypass ordering or flood the downstream controller with TCP-speed completions.
+This is a shared native-command policy, not a claim that USB control transfers
+have an interrupt <code>bInterval</code>. Enumeration, feature requests, input and ISO audio
+retain their independent paths.</p>
+<p>Queued reports are copied once into fixed-capacity slots, with payload bounded
+by the HID endpoint capacity. Cancellation/reset before admission has no device
+side effect; successful admission cannot subsequently be reported as unlinked.
+A full worker/device queue returns an explicit error and zero actual length,
+never a false success. Distinct changes and final stops remain ordered. No
+latest-state merging, gain changes or added audio buffering are introduced here.</p>
 <h2 id="feedback-state">Feedback state</h2>
 <p>The 474-byte V5 feedback object contains:</p>
 <ul>
