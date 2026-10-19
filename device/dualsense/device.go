@@ -1372,29 +1372,42 @@ func (d *DualSense) HandleControl(bmRequestType, bRequest uint8, wValue, wIndex,
 // or falsely acknowledging a command whose partial fields were discarded.
 func (d *DualSense) TryHandleOutputCommand(endpoint uint8,
 	setup [8]byte, out []byte) (handled, accepted bool) {
-	if endpoint == EndpointOut&0x0f {
+	if _, handled := d.OutputCommandServiceEndpoint(endpoint, setup, out); handled {
 		return true, d.handleOutputReport(out)
+	}
+	return false, false
+}
+
+// OutputCommandServiceEndpoint routes native SET_REPORT and interrupt output
+// through the same controller-state lane.
+// The virtual HID OUT descriptor advertises a 4ms opportunity. Completing
+// these writes at TCP speed lets a synchronous game flood downstream physical
+// output with a burst which a real USB controller could not acknowledge.
+func (d *DualSense) OutputCommandServiceEndpoint(endpoint uint8,
+	setup [8]byte, out []byte) (uint8, bool) {
+	if endpoint == EndpointOut&0x0f {
+		return EndpointOut & 0x0f, true
 	}
 	if endpoint != 0 || setup[0] != hidClassOUT || setup[1] != hidSetReport ||
 		binary.LittleEndian.Uint16(setup[2:4]) != uint16(reportTypeOutput)<<8|uint16(ReportIDOutput) {
-		return false, false
+		return 0, false
 	}
 	// Leave malformed or differently addressed control requests to the existing
 	// control policy; this seam must not claim feature or enumeration traffic.
 	interfaceNumber := binary.LittleEndian.Uint16(setup[4:6])
 	if interfaceNumber > 0xff || int(binary.LittleEndian.Uint16(setup[6:8])) != len(out) {
-		return false, false
+		return 0, false
 	}
 	iface, exists := d.descriptor.Interface(uint8(interfaceNumber))
 	if !exists || iface.Descriptor.BInterfaceClass != 0x03 {
-		return false, false
+		return 0, false
 	}
 	if d.rejectsEdgeConfigurationOutput(out) {
 		// EP0 must reach the transactional owner for an actual STALL, not the
 		// queue-full response used by ordinary output admission failures.
-		return false, false
+		return 0, false
 	}
-	return true, d.handleOutputReport(out)
+	return EndpointOut & 0x0f, true
 }
 
 func (d *DualSense) handleOutputReport(out []byte) bool {

@@ -46,6 +46,16 @@ type OutputCommandAdmissionDevice interface {
 	TryHandleOutputCommand(endpoint uint8, setup [8]byte, data []byte) (handled, accepted bool)
 }
 
+// PacedOutputCommandAdmissionDevice binds native output to one descriptor's
+// service clock. Classification is pure and bounded: it must not admit or
+// mutate state. Both interrupt OUT and class SET_REPORT can select the same
+// service endpoint, preserving their shared device-command order. Only this
+// native lane is paced; input, ISO and enumeration stay independent.
+type PacedOutputCommandAdmissionDevice interface {
+	OutputCommandAdmissionDevice
+	OutputCommandServiceEndpoint(endpoint uint8, setup [8]byte, data []byte) (uint8, bool)
+}
+
 // ControlTransactionDirection identifies the USB/IP envelope direction of an
 // endpoint-zero submission independently of bmRequestType. A transactional
 // device must validate that the two agree for the request it claims.

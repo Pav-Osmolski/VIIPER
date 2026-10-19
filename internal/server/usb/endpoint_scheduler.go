@@ -28,6 +28,7 @@ const (
 	isoInWorker
 	isoOutWorker
 	genericInWorker
+	nativeOutputWorker
 )
 
 type endpointWorkerKey struct {
@@ -148,6 +149,8 @@ type isoOutGenerationDevice interface {
 }
 
 type endpointJob struct {
+	commandEndpoint uint8
+	commandSetup    [8]byte
 	seq             uint32
 	xferLen         uint32
 	serviceAt       time.Time
@@ -203,6 +206,8 @@ func (kind endpointWorkerKind) String() string {
 		return "iso-out"
 	case genericInWorker:
 		return "generic-in"
+	case nativeOutputWorker:
+		return "native-output"
 	default:
 		return "unknown"
 	}
@@ -348,8 +353,11 @@ func newEndpointWorkerWithClock(
 			w.slots[slotIndex].packets = w.packetSlab[start : start : start+preallocatedIsoPacketCount]
 		}
 	}
-	if kind == isoOutWorker && maxPacket > 0 {
-		bytesPerSlot := maxPacket * preallocatedIsoPacketCount
+	if (kind == isoOutWorker || kind == nativeOutputWorker) && maxPacket > 0 {
+		bytesPerSlot := maxPacket
+		if kind == isoOutWorker {
+			bytesPerSlot *= preallocatedIsoPacketCount
+		}
 		w.payloadSlab = make([]byte, endpointQueueCapacity*bytesPerSlot)
 		for slotIndex := range w.slots {
 			start := slotIndex * bytesPerSlot
@@ -383,6 +391,19 @@ func (w *endpointWorker) enqueueWithGeneration(
 	now time.Time,
 	mediaGeneration uint64,
 ) bool {
+	return w.enqueueWithOutputCommand(seq, xferLen, payload, packets, now, mediaGeneration, 0, [8]byte{})
+}
+
+func (w *endpointWorker) enqueueWithOutputCommand(
+	seq, xferLen uint32, payload []byte, packets []usbip.IsoPacketDescriptor,
+	now time.Time, mediaGeneration uint64, commandEndpoint uint8, commandSetup [8]byte,
+) bool {
+	// This lane owns one HID report, not an arbitrary bulk transfer. Keep
+	// malformed lengths from expanding every preallocated queue slot.
+	if w.kind == nativeOutputWorker && (w.maxPacket <= 0 ||
+		len(payload) > w.maxPacket || uint32(len(payload)) != xferLen) {
+		return false
+	}
 	w.mu.Lock()
 	if w.freeCount == 0 {
 		w.telemetry.overflow.Add(1)
@@ -401,6 +422,8 @@ func (w *endpointWorker) enqueueWithGeneration(
 	job.cancelled = false
 	job.responseStarted = false
 	job.sideEffectStarted = false
+	job.commandEndpoint = commandEndpoint
+	job.commandSetup = commandSetup
 
 	job.payload = resizeBytes(job.payload, len(payload))
 	copy(job.payload, payload)
@@ -408,7 +431,7 @@ func (w *endpointWorker) enqueueWithGeneration(
 	copy(job.packets, packets)
 
 	duration := w.interval
-	if w.kind != interruptInWorker {
+	if w.kind != interruptInWorker && w.kind != nativeOutputWorker {
 		duration = time.Duration(len(packets)) * w.interval
 	}
 	job.duration = duration
@@ -816,9 +839,45 @@ func (w *endpointWorker) run() {
 			completed = w.processIsoOut(timer, idx)
 		case genericInWorker:
 			completed = w.processGenericIn(idx)
+		case nativeOutputWorker:
+			completed = w.processNativeOutput(timer, idx)
 		}
 		w.finishCurrentWithRetention(idx, completed, retain)
 	}
+}
+
+func (w *endpointWorker) processNativeOutput(timer *time.Timer, idx int) bool {
+	if !w.waitForPhase(timer, idx, 0) {
+		return false
+	}
+	w.mu.Lock()
+	job := &w.slots[idx]
+	if w.ctx.Err() != nil || w.inFlight != idx || job.cancelled || job.generation != w.generation {
+		w.mu.Unlock()
+		return false
+	}
+	seq, length, queuedAt := job.seq, job.xferLen, job.queuedAt
+	// The device callback is fixed-cost admission, not physical or socket I/O.
+	// Keep cancellation ownership until it succeeds; UNLINK cannot report a
+	// cancelled command after an irrevocable device-side admission.
+	admission := w.dev.(usbdesc.OutputCommandAdmissionDevice)
+	handled, accepted := admission.TryHandleOutputCommand(job.commandEndpoint, job.commandSetup, job.payload)
+	job.sideEffectStarted = handled && accepted
+	w.mu.Unlock()
+	w.telemetry.queueAge.record(w.clock.Now().Sub(queuedAt))
+	status, actual := int32(0), length
+	if !handled {
+		status, actual = errPipe, 0
+	} else if !accepted {
+		status, actual = errNoSpace, 0
+	}
+	w.responseBuffer = buildRetSubmitPacket(w.responseBuffer, seq, status, actual, nil, nil, false)
+	written, err := w.responses.writeIf(w.responseBuffer, true, time.Now(), func() bool { return w.markResponseStarted(idx) })
+	if err != nil {
+		w.fail(fmt.Errorf("native OUT endpoint %d seq %d: %w", w.ep, seq, err))
+		return false
+	}
+	return written
 }
 
 func (w *endpointWorker) processGenericIn(idx int) bool {
@@ -1304,6 +1363,9 @@ func (s *endpointSchedulers) precreateEndpointWorkers() {
 				if dir == usbip.DirIn {
 					kind = interruptInWorker
 					scheduled = true
+				} else if _, paced := s.dev.(usbdesc.PacedOutputCommandAdmissionDevice); paced {
+					kind = nativeOutputWorker
+					scheduled = true
 				}
 			case 0x01:
 				if dir == usbip.DirIn {
@@ -1454,6 +1516,17 @@ func (s *endpointSchedulers) snapshot() USBIPConnectionDiagnostics {
 func (s *endpointSchedulers) enqueueInterruptIn(seq, ep, xferLen uint32) bool {
 	binding, found := findEndpointBinding(s.desc, ep, usbip.DirIn)
 	return found && s.enqueueInterruptInBinding(seq, xferLen, binding)
+}
+
+func (s *endpointSchedulers) enqueueNativeOutput(seq, xferLen uint32, payload []byte,
+	endpoint uint8, setup [8]byte, serviceEndpoint uint8) bool {
+	binding, found := findEndpointBinding(s.desc, uint32(serviceEndpoint), usbip.DirOut)
+	if !found || binding.descriptor.BMAttributes&0x03 != 0x03 {
+		return false
+	}
+	worker := s.workerForBinding(binding, usbip.DirOut, nativeOutputWorker)
+	return worker != nil && worker.enqueueWithOutputCommand(seq, xferLen, payload, nil,
+		time.Now(), 0, endpoint, setup)
 }
 
 func (s *endpointSchedulers) enqueueInterruptInBinding(
