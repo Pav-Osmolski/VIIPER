@@ -7,6 +7,13 @@
     ]
   },
   {
+    "version": "0.1.12",
+    "title": "0.1.12",
+    "aliases": [
+      "stable"
+    ]
+  },
+  {
     "version": "0.1.11-issue47-cadence1",
     "title": "0.1.11-issue47-cadence1",
     "aliases": []
@@ -14,9 +21,7 @@
   {
     "version": "0.1.11",
     "title": "0.1.11",
-    "aliases": [
-      "stable"
-    ]
+    "aliases": []
   },
   {
     "version": "0.1.10",
