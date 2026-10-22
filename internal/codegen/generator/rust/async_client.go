@@ -16,7 +16,7 @@ const asyncClientTemplate = `{{.Header}}
 use crate::error::{ProblemJson, ViiperError};
 use crate::types::*;
 use std::net::SocketAddr;
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+use tokio::io::{AsyncBufReadExt, BufReader, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::TcpStream;
 
 /// Stream wrapper that can be either plain or encrypted
@@ -180,7 +180,13 @@ impl AsyncViiperClient {
         stream.flush().await?;
 
         let mut buf = Vec::new();
-        stream.read_to_end(&mut buf).await?;
+        let mut reader = BufReader::new(stream);
+        loop {
+            let read = reader.read_until(b'\n', &mut buf).await?;
+            let incomplete = !buf.iter().all(u8::is_ascii_whitespace) &&
+                matches!(serde_json::from_slice::<serde_json::Value>(&buf), Err(error) if error.is_eof());
+            if read == 0 || !incomplete { break; }
+        }
 
         let response = String::from_utf8(buf)
             .map_err(|_| ViiperError::UnexpectedResponse("invalid UTF-8".into()))?

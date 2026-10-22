@@ -1,0 +1,9 @@
+[package]
+name = "viiper-management-reply-validation"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+viiper-client = { path = "../../../clients/rust", features = ["async"] }
+tokio = { version = "1.0", features = ["rt", "time", "macros"] }
