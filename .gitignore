@@ -32,6 +32,9 @@ dist/
 _testing/authv2/**/bin/
 _testing/authv2/**/obj/
 _testing/authv2/**/target/
+_testing/management-replies/**/bin/
+_testing/management-replies/**/obj/
+_testing/management-replies/**/target/
 
 # Windows version info resources
 resource.syso

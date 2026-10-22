@@ -4,6 +4,12 @@ Curated release history inherited by the Pav-Osmolski VIIPER fork.
 These records describe their original releases, not a promise that every
 upstream asset is republished here. For DS4Windows, use its bundled backend.
 
+## Unreleased
+
+- Clarify the existing LF-terminated management reply format and finish Go, generated C# and Rust client replies at LF rather than waiting for connection close. Preserve clean-EOF compatibility and reject read errors before a complete reply. Keep JSON/API error validation and authenticated-record checks.
+- Preserve split UTF-8 characters in generated C# and TypeScript management replies. Make TypeScript requests reject incomplete or failed connections instead of remaining pending, and handle errors on the authenticated socket wrapper.
+- These are client-library and documentation changes; no server wire format, driver or bundled backend version change is introduced. Thanks to [@cns00](https://github.com/cns00) for the diagnostic reports in [DS4Windows #66](https://github.com/Pav-Osmolski/DS4Windows/issues/66) and [upstream #153](https://github.com/hbashton/DS4Windows/issues/153). The reporter's connection-reset issue remains unconfirmed.
+
 ## [0.1.11](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.11) — 2026-10-15
 
 - Paired with DS4Windows 5.0.25 after successful maintainer testing of the combined package.

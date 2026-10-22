@@ -94,6 +94,9 @@ jobs:
                   npm install
                   npm run build
 
+            - name: Test TypeScript management replies
+              run: node _testing/management-replies/typescript.cjs clients/typescript
+
             - name: Rename TypeScript Client Library tarball
               if: ${{ inputs.upload_artifacts }}
               working-directory: clients/typescript
@@ -133,6 +136,9 @@ jobs:
 
             - name: Pack C# Client Library
               run: dotnet pack clients/csharp/Viiper.Client/Viiper.Client.csproj -c Release -o artifacts/nuget
+
+            - name: Test C# management replies
+              run: dotnet run --project _testing/management-replies/csharp/Replies.csproj -c Release
 
             - name: Build C# examples (smoke)
               run: |
@@ -213,6 +219,9 @@ jobs:
               run: |
                   cargo build --release
                   cargo build --release --features async
+
+            - name: Test Rust management replies
+              run: cargo test --manifest-path _testing/management-replies/rust/Cargo.toml
 
             - name: Package Rust Client Library
               working-directory: clients/rust
