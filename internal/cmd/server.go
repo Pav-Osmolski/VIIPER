@@ -115,6 +115,8 @@ func (s *Server) StartServer(ctx context.Context, logger *slog.Logger, rawLogger
 				handler.BusDeviceMicrophoneInterfaceStatus(usbSrv))
 			r.Register("bus/{busId}/{devId}/ns2pro-status-v1",
 				handler.BusDeviceNS2ProRuntimeStatusV1(usbSrv))
+			r.Register("bus/{busId}/{devId}/battery-status-v1",
+				handler.BusDeviceBatteryStatusV1(usbSrv))
 			r.RegisterStream("bus/{busId}/{deviceid}", api.DeviceStreamHandler(usbSrv))
 			r.RegisterStream("bus/{busId}/{deviceid}/stream-authorized-xboxone", api.DeviceStreamHandler(usbSrv))
 
