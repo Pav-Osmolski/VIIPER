@@ -6,9 +6,12 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
+## [0.1.13](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.13) - 2026-10-23
+
+- Add strict, versioned live battery/power status updates for virtual DualShock 4, DualSense/Edge and NS2 Pro. Preserve controller identity, measured voltage and existing input packet formats. Paired with DS4Windows 5.0.46 after successful maintainer USB/Bluetooth testing. Thanks to [@Jobima1st](https://github.com/Jobima1st) for [DS4Windows #75](https://github.com/Pav-Osmolski/DS4Windows/issues/75) and [upstream #111](https://github.com/hbashton/DS4Windows/issues/111).
 - Clarify the existing LF-terminated management reply format and finish Go, generated C# and Rust client replies at LF rather than waiting for connection close. Preserve clean-EOF compatibility and reject read errors before a complete reply. Keep JSON/API error validation and authenticated-record checks.
 - Preserve split UTF-8 characters in generated C# and TypeScript management replies. Make TypeScript requests reject incomplete or failed connections instead of remaining pending, and handle errors on the authenticated socket wrapper.
-- These are client-library and documentation changes; no server wire format, driver or bundled backend version change is introduced. Thanks to [@cns00](https://github.com/cns00) for the diagnostic reports in [DS4Windows #66](https://github.com/Pav-Osmolski/DS4Windows/issues/66) and [upstream #153](https://github.com/hbashton/DS4Windows/issues/153). The reporter's connection-reset issue remains unconfirmed.
+- The management-reply changes preserve the server wire format and do not change drivers. Thanks to [@cns00](https://github.com/cns00) for the diagnostic reports in [DS4Windows #66](https://github.com/Pav-Osmolski/DS4Windows/issues/66) and [upstream #153](https://github.com/hbashton/DS4Windows/issues/153). The reporter's connection-reset issue remains unconfirmed.
 
 ## [0.1.11](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.11) — 2026-10-15
 
