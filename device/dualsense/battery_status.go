@@ -1,6 +1,6 @@
 package dualsense
 
-import "github.com/Alia5/VIIPER/device/batterystatus"
+import "github.com/Alia5/VIIPER/internal/batterystatus"
 
 func (d *DualSense) UpdateBatteryStatusV1(payload string) error {
 	status, err := batterystatus.Decode(payload)

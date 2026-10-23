@@ -81,9 +81,9 @@ func Decode(payload string) (StatusV1, error) {
 	return s, nil
 }
 
-// Sony input reports expose discrete ten-percent bands, not an exact percentage.
+// DualShock4 encodes discrete ten-percent bands rather than an exact percentage.
 func (s StatusV1) DualShock4() byte {
-	level := byte(s.Percent / 10)
+	level := s.Percent / 10
 	if s.Complete {
 		level = 11
 	}
@@ -94,7 +94,7 @@ func (s StatusV1) DualShock4() byte {
 }
 
 func (s StatusV1) DualSense() byte {
-	level := byte(s.Percent / 10)
+	level := s.Percent / 10
 	if s.Complete {
 		return level | 0x20
 	}

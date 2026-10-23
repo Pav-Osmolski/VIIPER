@@ -1,6 +1,6 @@
 package dualshock4
 
-import "github.com/Alia5/VIIPER/device/batterystatus"
+import "github.com/Alia5/VIIPER/internal/batterystatus"
 
 func (d *DualShock4) UpdateBatteryStatusV1(payload string) error {
 	status, err := batterystatus.Decode(payload)
