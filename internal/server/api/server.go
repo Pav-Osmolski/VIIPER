@@ -173,6 +173,9 @@ func (s *Server) registerConnection(conn net.Conn) (context.Context, bool) {
 }
 
 func (s *Server) finishConnection(conn net.Conn, traces ...*connectionTrace) {
+	if len(traces) > 0 && s.config.ManagementCloseMode == "graceful" && traces[0].replyExpected > 0 && !traces[0].replyFailed {
+		gracefulManagementClose(conn, traces[0].logger, 250*time.Millisecond)
+	}
 	s.lifecycleMu.Lock()
 	cancel := s.connections[conn]
 	delete(s.connections, conn)
