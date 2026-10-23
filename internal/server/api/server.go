@@ -172,7 +172,7 @@ func (s *Server) registerConnection(conn net.Conn) (context.Context, bool) {
 	return ctx, true
 }
 
-func (s *Server) finishConnection(conn net.Conn) {
+func (s *Server) finishConnection(conn net.Conn, traces ...*connectionTrace) {
 	s.lifecycleMu.Lock()
 	cancel := s.connections[conn]
 	delete(s.connections, conn)
@@ -180,7 +180,13 @@ func (s *Server) finishConnection(conn net.Conn) {
 	if cancel != nil {
 		cancel()
 	}
-	_ = conn.Close()
+	if len(traces) == 0 {
+		_ = conn.Close()
+		return
+	}
+	traces[0].closeBegin()
+	err := conn.Close()
+	traces[0].closeEnd(err)
 }
 
 func (s *Server) serve(ln net.Listener) {
@@ -232,7 +238,8 @@ func (s *Server) writeOK(w io.Writer, rest string) {
 }
 
 func (s *Server) handleConn(conn net.Conn, connCtx context.Context) {
-	defer s.finishConnection(conn)
+	trace := newConnectionTrace(s.logger, conn)
+	defer s.finishConnection(conn, trace)
 
 	connLogger := s.logger.With("remote", conn.RemoteAddr().String())
 	r := bufio.NewReader(conn)
@@ -283,6 +290,7 @@ func (s *Server) handleConn(conn net.Conn, connCtx context.Context) {
 		w = conn
 
 		connLogger.Debug("authenticated connection established")
+		trace.authenticated = true
 	} else {
 		connLogger.Debug("continuing unauthenticated connection")
 	}
@@ -326,6 +334,7 @@ func (s *Server) handleConn(conn net.Conn, connCtx context.Context) {
 	}
 
 	path = strings.ToLower(path)
+	trace.operation = traceOperation(path)
 	connLogger.Info("api cmd", "path", path)
 	if connCtx.Err() != nil {
 		return
@@ -339,11 +348,11 @@ func (s *Server) handleConn(conn net.Conn, connCtx context.Context) {
 		res := &Response{}
 		if err := h(req, res, connLogger); err != nil {
 			connLogger.Error("api handler error", "path", path, "error", err)
-			s.writeError(w, err)
+			s.writeError(tracedReplyWriter{Writer: w, trace: trace}, err)
 			return
 		}
 		connLogger.Debug("api handler success", "path", path)
-		s.writeOK(w, res.JSON)
+		s.writeOK(tracedReplyWriter{Writer: w, trace: trace}, res.JSON)
 		return
 	} else if sh, params := s.router.MatchStream(path); sh != nil {
 		connLogger.Info("api stream begin", "path", path)
