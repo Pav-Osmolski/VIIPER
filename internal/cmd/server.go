@@ -20,11 +20,12 @@ import (
 const keyFileName = "viiper.key.txt"
 
 type Server struct {
-	USBServerConfig   usb.ServerConfig `embed:"" prefix:"usb."`
-	APIServerConfig   api.ServerConfig `embed:"" prefix:"api."`
-	ConnectionTimeout time.Duration    `help:"ConnectionTimeout operation timeout" default:"30s" env:"VIIPER_CONNECTION_TIMEOUT"`
-	KeyFile           *string          `help:"Explicit absolute API password file; errors never fall back to the default key file"`
-	NoTray            *bool            `help:"Disable the tray icon (otherwise use the DS4Windows preference)" env:"VIIPER_NO_TRAY"`
+	DiagnosticPingOnly bool             `help:"Testing only: isolated authenticated loopback ping server without USB/IP or device routes"`
+	USBServerConfig    usb.ServerConfig `embed:"" prefix:"usb."`
+	APIServerConfig    api.ServerConfig `embed:"" prefix:"api."`
+	ConnectionTimeout  time.Duration    `help:"ConnectionTimeout operation timeout" default:"30s" env:"VIIPER_CONNECTION_TIMEOUT"`
+	KeyFile            *string          `help:"Explicit absolute API password file; errors never fall back to the default key file"`
+	NoTray             *bool            `help:"Disable the tray icon (otherwise use the DS4Windows preference)" env:"VIIPER_NO_TRAY"`
 }
 
 // Run is called by Kong when the server command is executed.
@@ -37,6 +38,9 @@ func (s *Server) Run(logger *slog.Logger, rawLogger log.RawLogger) error {
 func (s *Server) StartServer(ctx context.Context, logger *slog.Logger, rawLogger log.RawLogger) error {
 	if ctx.Err() != nil {
 		return nil
+	}
+	if s.DiagnosticPingOnly {
+		return s.startDiagnosticPingServer(ctx, logger, rawLogger)
 	}
 	keyFilePath, err := resolveServerKeyFilePath(s.KeyFile)
 	if err != nil {
