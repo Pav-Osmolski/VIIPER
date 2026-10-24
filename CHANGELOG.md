@@ -6,6 +6,11 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
+## [0.1.15](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.15) - 2026-10-24
+
+- Correct the DualShock 4 factory report's two 16-byte date/time fields. The time previously started one byte early, causing host tools to display `Sep 17 20211 1:34:00` instead of `Sep 17 2021 11:34:00`. Thanks to [@Jobima1st](https://github.com/Jobima1st) for following up in [DS4Windows #75](https://github.com/Pav-Osmolski/DS4Windows/issues/75).
+- Add host-decoding regression coverage through actual USB GET_REPORT handlers for DualShock 4, DualSense and DualSense Edge, including custom dates, padding, version fields and short reads. Audit the other emulated controller metadata formats; no matching date/time overlap was found. Paired with DS4Windows 5.0.48.
+
 ## [0.1.14](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.14) - 2026-10-24
 
 - Gracefully finish complete one-shot management replies before closing their TCP connection, bounding the drain by time and input bytes and keeping it interruptible by server shutdown. Streaming controller/audio connections, authentication, framing and operation retries are unchanged. Thanks to [@cns00](https://github.com/cns00) for the diagnostic comparisons and successful final paired-preview testing in [DS4Windows #66](https://github.com/Pav-Osmolski/DS4Windows/issues/66), also reported in [upstream #153](https://github.com/hbashton/DS4Windows/issues/153). The reporter confirmed consistently reaching Ready on 24 October. Paired with DS4Windows 5.0.47, including its separate app/installer readiness-check correction. No hardware fault or universal cause has been established.

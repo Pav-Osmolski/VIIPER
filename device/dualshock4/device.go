@@ -733,8 +733,10 @@ func (d *DualShock4) featureReportBoardInfo() []byte {
 	buildTimeStr := d.metaState.BuildTime.Format("15:04:05")
 	d.mtx.Unlock()
 
-	copy(report[1:16], buildDateStr)
-	copy(report[16:32], buildTimeStr)
+	// Report ID precedes two 16-byte NUL-padded strings. The time starts
+	// at byte 17; byte 16 still belongs to the date field.
+	copy(report[1:17], buildDateStr)
+	copy(report[17:33], buildTimeStr)
 	binary.LittleEndian.PutUint16(report[33:35], HardwareVersionMajor)
 	binary.LittleEndian.PutUint16(report[35:37], HardwareVersionMinor)
 	binary.LittleEndian.PutUint32(report[37:41], SoftwareVersionMajor)
