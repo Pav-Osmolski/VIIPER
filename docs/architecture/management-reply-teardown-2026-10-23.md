@@ -12,6 +12,12 @@ controller creation after a bounded existing retry coexisted with residual reset
 These are single-host observations, not a guarantee of complete resolution or
 evidence identifying a hardware defect, Windows version or security product.
 
+On 24 October 2026 the reporter confirmed that the final paired DS4Windows
+5.0.47 connection candidate consistently reached Ready, and the maintainer
+authorized stable publication. The accepted implementation ships in VIIPER
+0.1.14 with DS4Windows 5.0.47. This acceptance resolves the reported behaviour;
+it does not identify a defective laptop component or guarantee all future resets.
+
 The production implementation applies graceful teardown only after a complete
 one-shot management reply has been written successfully. It shuts down TCP sends,
 then drains at most 4097 bytes for at most 250 ms before the existing final close.

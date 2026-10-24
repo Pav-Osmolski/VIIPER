@@ -6,7 +6,10 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
-- Gracefully finish complete one-shot management replies before closing their TCP connection, bounding the drain by time and input bytes and keeping it interruptible by server shutdown. Streaming controller/audio connections, authentication, framing and operation retries are unchanged. Thanks to [@cns00](https://github.com/cns00) for the five diagnostic comparisons in [DS4Windows #66](https://github.com/Pav-Osmolski/DS4Windows/issues/66). Original closing failed 77/400 isolated requests on that laptop, compared with 3/400 using graceful closing. This improves observed reliability without establishing a hardware fault or eliminating every reset.
+## [0.1.14](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.14) - 2026-10-24
+
+- Gracefully finish complete one-shot management replies before closing their TCP connection, bounding the drain by time and input bytes and keeping it interruptible by server shutdown. Streaming controller/audio connections, authentication, framing and operation retries are unchanged. Thanks to [@cns00](https://github.com/cns00) for the diagnostic comparisons and successful final paired-preview testing in [DS4Windows #66](https://github.com/Pav-Osmolski/DS4Windows/issues/66), also reported in [upstream #153](https://github.com/hbashton/DS4Windows/issues/153). The reporter confirmed consistently reaching Ready on 24 October. Paired with DS4Windows 5.0.47, including its separate app/installer readiness-check correction. No hardware fault or universal cause has been established.
+- The earlier isolated comparison improved from 77/400 failed requests to 3/400 with graceful closing; those diagnostic measurements are historical and do not imply every possible future connection reset is eliminated. Implementation and regression coverage: [PR #9](https://github.com/Pav-Osmolski/VIIPER/pull/9).
 
 ## [0.1.13](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.13) - 2026-10-23
 
