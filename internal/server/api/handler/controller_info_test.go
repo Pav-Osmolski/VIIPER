@@ -56,12 +56,13 @@ func TestControllerInfoIsReadOnlyAndMatchesEachRealDevice(t *testing.T) {
 				text, err := client.Do(path, "", params)
 				require.NoError(t, err)
 				var response struct {
-					Version             int
-					BusID               uint32
-					DevID               string
-					VendorID, ProductID uint16
-					FactoryReport       []byte
-					Metadata            map[string]any
+					Version                       int
+					BusID                         uint32
+					DevID                         string
+					VendorID, ProductID           uint16
+					FactoryReport                 []byte
+					Metadata                      map[string]any
+					Manufacturer, Product, Serial string
 				}
 				require.NoError(t, json.Unmarshal([]byte(text), &response))
 				require.Equal(t, 1, response.Version)
@@ -70,6 +71,20 @@ func TestControllerInfoIsReadOnlyAndMatchesEachRealDevice(t *testing.T) {
 				descriptor := dev.GetDescriptor()
 				require.Equal(t, descriptor.Device.IDVendor, response.VendorID)
 				require.Equal(t, descriptor.Device.IDProduct, response.ProductID)
+				for _, field := range []struct {
+					index  byte
+					actual string
+				}{
+					{descriptor.Device.IManufacturer, response.Manufacturer},
+					{descriptor.Device.IProduct, response.Product},
+					{descriptor.Device.ISerialNumber, response.Serial},
+				} {
+					if field.index == 0 {
+						require.Empty(t, field.actual, "USB language IDs must never appear as identity strings")
+					} else {
+						require.Equal(t, descriptor.Strings[field.index], field.actual)
+					}
+				}
 				require.Len(t, response.FactoryReport, tc.factory)
 				if tc.factory != 0 {
 					id := uint16(0x20)

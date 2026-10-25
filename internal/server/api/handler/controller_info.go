@@ -40,6 +40,14 @@ func BusDeviceControllerInfoV1(s *usb.Server) api.HandlerFunc {
 			if err != nil {
 				return apierror.ErrConflict("controller changed during snapshot")
 			}
+			// Index zero is the USB language-ID descriptor, never an identity
+			// string. A zero identity index means that field is not provided.
+			identityString := func(index byte) string {
+				if index == 0 {
+					return ""
+				}
+				return desc.Strings[index]
+			}
 			// Expose only diagnostic metadata, never registration/activation
 			// authority, application paths or arbitrary device-specific options.
 			metadata := map[string]any{}
@@ -81,7 +89,7 @@ func BusDeviceControllerInfoV1(s *usb.Server) api.HandlerFunc {
 				FactoryReport []byte            `json:"factoryReport,omitempty"`
 			}{1, uint32(busID), strconv.FormatUint(devID, 10), inferDeviceType(entry.Dev),
 				desc.Device.IDVendor, desc.Device.IDProduct, desc.Device.BcdDevice,
-				desc.Strings[desc.Device.IManufacturer], desc.Strings[desc.Device.IProduct], desc.Strings[desc.Device.ISerialNumber], metadata, details, factory}
+				identityString(desc.Device.IManufacturer), identityString(desc.Device.IProduct), identityString(desc.Device.ISerialNumber), metadata, details, factory}
 			payload, err := json.Marshal(response)
 			if err != nil {
 				return apierror.ErrInternal("cannot encode controller info")
