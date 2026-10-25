@@ -3,6 +3,7 @@ package xboxone
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -231,7 +232,7 @@ func (device *AuthorizedDormantRetainedUSBDevice) RetainedUSBImportDeviceID() ui
 }
 
 func (device *AuthorizedDormantRetainedUSBDevice) RetainedUSBImportOwner() retainedusb.ImportOwner {
-	if device == nil || device.adapter == nil {
+	if device == nil || device.adapter == nil || device.adapter.coordinator == nil || device.adapter.coordinator.engine == nil {
 		return nil
 	}
 	return device.adapter
@@ -269,3 +270,18 @@ func (device *AuthorizedDormantRetainedUSBDevice) PublishSemanticInputWire(
 var _ usb.Device = (*AuthorizedDormantRetainedUSBDevice)(nil)
 var _ retainedusb.ImportDevice = (*AuthorizedDormantRetainedUSBDevice)(nil)
 var _ retainedusb.OneShotImportDevice = (*AuthorizedDormantRetainedUSBDevice)(nil)
+
+// ControllerInfoFieldsV1 exposes the immutable public GIP identity, not its
+// registration, import, stream or removal capabilities.
+func (device *AuthorizedDormantRetainedUSBDevice) ControllerInfoFieldsV1() map[string]string {
+	if device == nil || device.adapter == nil || device.adapter.coordinator == nil || device.adapter.coordinator.engine == nil {
+		return nil
+	}
+	identity := device.adapter.coordinator.engine.profile.identity
+	fw := identity.Firmware
+	return map[string]string{
+		"firmwareVersion": fmt.Sprintf("%d.%d.%d.%d", fw.Major, fw.Minor, fw.Build, fw.Revision),
+		"hardwareVersion": fmt.Sprintf("%d.%d", identity.HardwareMajor, identity.HardwareMinor),
+		"deviceInfo":      fmt.Sprintf("0x%016X", identity.DeviceID),
+	}
+}

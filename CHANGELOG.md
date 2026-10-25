@@ -6,6 +6,8 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
+- Add a read-only, versioned controller-information endpoint for the selected virtual device, with descriptor identity for all output types, actual DS4/DualSense/Edge factory reports, public Xbox One firmware/hardware versions and supported status metadata. No device writes, stream reopen or operation authority are exposed.
+
 ## [0.1.15](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.15) - 2026-10-24
 
 - Correct the DualShock 4 factory report's two 16-byte date/time fields. The time previously started one byte early, causing host tools to display `Sep 17 20211 1:34:00` instead of `Sep 17 2021 11:34:00`. Thanks to [@Jobima1st](https://github.com/Jobima1st) for following up in [DS4Windows #75](https://github.com/Pav-Osmolski/DS4Windows/issues/75).
