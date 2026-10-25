@@ -308,6 +308,29 @@ func (d *DualShock4) GetDeviceSpecificArgs() map[string]any {
 	return res
 }
 
+// GetMicrophoneInterfaceStatus lets the narrow API report when Windows opens
+// DS4 capture. V3 duplex streams use this polling route to arm the physical
+// Bluetooth microphone; broad device metadata must not be a fallback.
+func (d *DualShock4) GetMicrophoneInterfaceStatus() map[string]any {
+	d.mtx.Lock()
+	active := d.microphoneInterfaceActive
+	state := d.microphoneBuffer.State()
+	d.mtx.Unlock()
+	return map[string]any{
+		"active":         active,
+		"queuedBytes":    state.QueuedBytes,
+		"targetBytes":    state.TargetBytes,
+		"maximumBytes":   state.MaximumBytes,
+		"primed":         state.Primed,
+		"underruns":      state.Underruns,
+		"droppedBytes":   state.DroppedBytes,
+		"overflowEvents": state.OverflowEvents,
+		"packetsRead":    state.PacketsRead,
+		"zeroPackets":    state.ZeroPackets,
+		"servoRatePPM":   state.ServoRatePPM,
+	}
+}
+
 func (d *DualShock4) SetInterfaceAltSetting(iface, alt uint8) {
 	d.mtx.Lock()
 	var resetSpeaker func()
