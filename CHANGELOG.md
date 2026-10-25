@@ -6,6 +6,10 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
+There are currently no unreleased changes.
+
+## [0.1.17](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.17) - 2026-10-25
+
 - Expose the existing DualShock 4 microphone capture state through the narrow microphone-interface endpoint, including the audio-only companion used alongside Xbox output. DS4Windows can now detect when Windows starts recording and arm the physical Bluetooth microphone route. Thanks to [@1hezio](https://github.com/1hezio) for the logs in [DS4Windows issue #80](https://github.com/Pav-Osmolski/DS4Windows/issues/80). Regression tests cover every DS4 registration alias, inactive/active transitions, buffered PCM delivery, exact device selection and non-draining status reads.
 
 ## [0.1.16](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.16) - 2026-10-25
