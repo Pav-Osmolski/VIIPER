@@ -6,7 +6,8 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
-- Add a read-only, versioned controller-information endpoint for the selected virtual device, with descriptor identity for all output types, actual DS4/DualSense/Edge factory reports, public Xbox One firmware/hardware versions and supported status metadata. No device writes, stream reopen or operation authority are exposed.
+- Add a read-only, versioned controller-information endpoint for the selected virtual device, with descriptor identity for all output types, actual DS4/DualSense/Edge factory reports, public Xbox One firmware/hardware versions and supported status metadata. No device writes, stream reopen or operation authority are exposed. Paired with DS4Windows 5.0.49.
+- Treat zero USB identity-string indices as unavailable. Descriptor zero contains language IDs and must never appear as a serial number in Controller info. Cover absent/present strings and unchanged controller ownership across actual device implementations.
 
 ## [0.1.15](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.15) - 2026-10-24
 
