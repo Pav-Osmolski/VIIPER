@@ -1,13 +1,15 @@
 # Generic joystick release preparation
 
-The twelve-button device works in the matched DS4Windows portable preview.
+The production target is a fixed sixteen-button device with six axes and one
+POV hat. Automated checks cover its descriptor, all sixteen button transitions
+and producer-loss neutralization; native/game acceptance remains pending.
 Normal release remains gated on approved USB identity, coordinated packaging
 and installed acceptance. This document does not choose a release version or
 authorize publication.
 
 ## Reuse the existing release pipeline
 
-1. After identity allocation, freeze the approved twelve-button descriptor and
+1. After identity allocation, freeze the approved sixteen-button descriptor and
    record the allocation URL. The pending proposed `1209:D10C` is not assigned;
    `FFFF:D10C` and the sixteen-button `FFFF:D110` remain lab identities.
 2. Review the feature diff against main and choose an explicit version under

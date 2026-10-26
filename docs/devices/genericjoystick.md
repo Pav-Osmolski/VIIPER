@@ -4,6 +4,18 @@ This feature branch contains an **input-only laboratory prototype**, not a
 released DS4Windows output. Its matching frontend branch is
 `Pav-Osmolski/DS4Windows:feature/directinput-output`.
 
+## Current production target (2026-10-26)
+
+The matched DS4Windows feature now requests a fixed sixteen-button joystick,
+six axes and one POV hat. Its profile button assignments do not change the HID
+shape. Inputs absent on a physical controller remain inactive or can be remapped.
+The sixteen-button lab device uses `FFFF:D110`; native Windows and game acceptance
+of this candidate remain required. The pending pid.codes request for `1209:D10C`
+now covers this fixed sixteen-button production design. Do not adopt that identity
+before approval. The earlier twelve-button backend remains available only for
+historical lab fixtures and has a distinct lab identity. Dated results below
+retain their original scope and do not certify this sixteen-button candidate.
+
 ## Purpose and reference behaviour
 
 Older Windows games can read different axis roles and resting positions from
