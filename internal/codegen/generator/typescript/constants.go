@@ -48,9 +48,9 @@ func generateConstants(logger *slog.Logger, deviceDir string, deviceName string,
 	if !ok || deviceConsts == nil {
 		return nil
 	}
-	if len(deviceConsts.Constants) == 0 && len(deviceConsts.Maps) == 0 {
-		return nil
-	}
+	// The device index always re-exports this module, even for an empty
+	// constants package. Emit the empty export below instead of a missing
+	// (or stale) script file.
 	pascalDevice := common.ToPascalCase(deviceName)
 	outputPath := filepath.Join(deviceDir, pascalDevice+"Constants.ts")
 	enums := groupConstants(deviceConsts.Constants)
@@ -106,13 +106,22 @@ func groupConstants(constants []scanner.ConstantInfo) []tsEnumGroup {
 
 func extractScalarConstantsTS(constants []scanner.ConstantInfo) []tsScalarConst {
 	result := make([]tsScalarConst, 0)
+	emittedGroups := map[string]bool{}
+	for _, group := range groupConstants(constants) {
+		emittedGroups[group.Name] = true
+	}
 	for _, c := range constants {
-		if common.IsIntegerConst(c.Value, c.Type) {
+		integer := common.IsIntegerConst(c.Value, c.Type)
+		if integer && emittedGroups[common.ExtractPrefix(c.Name)] {
 			continue
+		}
+		tsType := goTypeToTS(c.Type)
+		if integer {
+			tsType = "number"
 		}
 		result = append(result, tsScalarConst{
 			Name:  c.Name,
-			Type:  goTypeToTS(c.Type),
+			Type:  tsType,
 			Value: formatConstValueTS(c.Value),
 		})
 	}
@@ -243,6 +252,7 @@ func formatMapValueTS(value interface{}, goType string) string {
 
 const constantsTemplateTS = `{{writeFileHeaderTS}}
 // {{.Device}} constants and maps
+export {};
 
 {{range .Enums}}
 export enum {{.Name}} {
