@@ -114,6 +114,7 @@ jobs:
                   name: typescript-client-library${{ inputs.artifact_suffix }}
                   path: clients/typescript/viiperclient-typescript-client-library${{ inputs.artifact_suffix }}.tgz
                   if-no-files-found: error
+                  retention-days: ${{ contains(inputs.artifact_suffix, 'Release') && 30 || 90 }}
 
     csharp:
         name: C# Client Library
@@ -153,6 +154,7 @@ jobs:
                   name: csharp-client-library-nupkg${{ inputs.artifact_suffix }}
                   path: artifacts/nuget/*.nupkg
                   if-no-files-found: error
+                  retention-days: ${{ contains(inputs.artifact_suffix, 'Release') && 30 || 90 }}
 
     cpp-sdk:
         name: C++ Client Library
@@ -196,6 +198,7 @@ jobs:
                   name: cpp-client-library-headers${{ inputs.artifact_suffix }}
                   path: cpp-client-library-headers${{ inputs.artifact_suffix }}.zip
                   if-no-files-found: error
+                  retention-days: ${{ contains(inputs.artifact_suffix, 'Release') && 30 || 90 }}
 
     rust:
         name: Rust Client Library
@@ -248,3 +251,4 @@ jobs:
                   name: rust-client-library${{ inputs.artifact_suffix }}
                   path: clients/rust/target/package/viiper-client-rust-client-library${{ inputs.artifact_suffix }}.crate
                   if-no-files-found: error
+                  retention-days: ${{ contains(inputs.artifact_suffix, 'Release') && 30 || 90 }}
