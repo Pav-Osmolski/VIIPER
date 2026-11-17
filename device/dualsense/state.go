@@ -366,5 +366,7 @@ func (m *MetaState) UpdateFromMap(data map[string]any) {
 	if newMeta.BatteryVoltage != 0 {
 		m.BatteryVoltage = newMeta.BatteryVoltage
 	}
-	m.ShellColor = newMeta.ShellColor
+	if newMeta.ShellColor != "" {
+		m.ShellColor = newMeta.ShellColor
+	}
 }

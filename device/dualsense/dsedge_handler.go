@@ -46,6 +46,10 @@ func (h *dsedgehandler) CreateDevice(o *device.CreateOptions) (usb.Device, error
 		return nil, err
 	}
 
+	if metaState.ShellColor == "" {
+		metaState.ShellColor = DefaultShellColor
+	}
+
 	serial := metaState.SerialNumber
 	if serial == "" {
 		serial = DefaultSerialNumberDSEdge
