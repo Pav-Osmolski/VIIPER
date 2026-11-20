@@ -6,7 +6,12 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
-Preserve DualSense and DualSense Edge shell-colour metadata when creation options omit it or provide an empty value, and when partial metadata updates omit or clear the field. Explicit non-empty colours remain supported, and metadata updates do not rewrite an existing serial/MAC identity. Adapted from [Alia5's shell-colour correction](https://github.com/Alia5/VIIPER/commit/a02b5cb72065466064982bd63bff539b63515aac); thanks to [@Alia5](https://github.com/Alia5).
+- No unreleased changes.
+
+## [0.1.18](https://github.com/Pav-Osmolski/VIIPER/tree/v0.1.18) - 2026-11-20
+
+- Preserve DualSense and DualSense Edge shell-colour metadata when creation or partial update options omit the colour or pass an empty value. Explicit non-empty colours remain supported, and partial metadata updates preserve the existing serial number and MAC address. Thanks to [@Alia5](https://github.com/Alia5) for the [upstream shell-colour correction](https://github.com/Alia5/VIIPER/commit/a02b5cb72065466064982bd63bff539b63515aac) adapted in [PR #13](https://github.com/Pav-Osmolski/VIIPER/pull/13).
+- Shipped as the bundled backend in [DS4Windows 5.0.76](https://github.com/Pav-Osmolski/DS4Windows/releases/tag/5.0.76).
 
 ## [0.1.17](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.17) - 2026-10-25
 
