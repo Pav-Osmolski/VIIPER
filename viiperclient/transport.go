@@ -142,13 +142,27 @@ func (t *Transport) DoCtx(ctx context.Context, path string, payload any, pathPar
 	if t.cfg.ReadTimeout > 0 {
 		_ = conn.SetReadDeadline(time.Now().Add(t.cfg.ReadTimeout))
 	}
-	respBytes, err := io.ReadAll(conn)
-	if err != nil && len(respBytes) == 0 {
-		return "", fmt.Errorf("read: %w", err)
-	}
-	resp := string(respBytes)
+	return readManagementReply(conn)
+}
 
-	return strings.TrimSuffix(resp, "\n"), nil
+func readManagementReply(reader io.Reader) (string, error) {
+	buffered := bufio.NewReader(reader)
+	var response strings.Builder
+	// A complete single-line reply does not depend on a later clean socket
+	// close. Retain clean-EOF compatibility, but never suppress a reset or
+	// decryption error merely because an incomplete prefix was received.
+	for {
+		line, err := buffered.ReadString('\n')
+		response.WriteString(line)
+		if err != nil && err != io.EOF {
+			return "", fmt.Errorf("read: %w", err)
+		}
+		var value json.RawMessage
+		incomplete := json.NewDecoder(strings.NewReader(response.String())).Decode(&value) == io.ErrUnexpectedEOF
+		if err == io.EOF || !incomplete {
+			return strings.TrimSuffix(response.String(), "\n"), nil
+		}
+	}
 }
 
 func fillPath(pattern string, params map[string]string) string {

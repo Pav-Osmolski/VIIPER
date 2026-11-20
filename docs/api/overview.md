@@ -85,8 +85,22 @@ The exception to this are the device-control and feedback streams, which are raw
   (e.g., `bus/list\0` or `bus/create 5\0`)
 - **Payload**: optional string that can be a JSON object, numeric value, or plain string depending on the endpoint.\
   The payload may contain newlines (e.g., pretty-printed JSON) as only the null byte terminates the request.
-- **Success response**: a single line containing a JSON payload (or an empty line for commands that have no payload), terminated by connection close
-- **Error response**: a single line JSON object following RFC 7807 Problem Details format with a `status` field (HTTP-style status code) and other error details, terminated by connection close
+- **Success response**: a single UTF-8 JSON line (or an empty line for commands that have no payload), ending in LF (`\n`). The server then closes the connection.
+- **Error response**: a single UTF-8 JSON line following RFC 7807 Problem Details format, including a `status` field (HTTP-style status code), ending in LF (`\n`). The server then closes the connection.
+
+Read through the LF after a complete management reply; a later
+connection reset must not discard that reply. The server already writes this LF;
+this clarifies the existing wire format rather than introducing a new protocol
+version. Earlier documentation described completion only in terms of connection
+close. SDK readers retain pretty-printed JSON compatibility by continuing past
+internal newlines until the JSON value is complete. Clients may also retain
+clean-EOF compatibility for older peers without LF,
+but a read error before a complete line must propagate even if some bytes arrived.
+Validate the reply's JSON and API status as usual. For encrypted connections,
+verify a complete authenticated record before exposing any of its plaintext.
+Decode UTF-8 incrementally or after collecting the reply bytes so a character
+split across reads is preserved. This rule applies to management replies, not
+the binary device streams.
 
 !!! tip "Testing the API"
     For quick testing, you can use tools like `netcat` (Linux/macOS) or PowerShell scripts (Windows) to send requests and read responses.
@@ -372,6 +386,7 @@ package main
 
 import (
     "fmt"
+    "bufio"
     "io"
     "net"
 )
@@ -383,9 +398,12 @@ func main() {
     // Send request with null terminator
     fmt.Fprint(conn, "bus/create\x00")
 
-    // Read entire response until connection closes
-    resp, _ := io.ReadAll(conn)
-    fmt.Println(string(resp)) // {"busId":1}\n
+    // Complete the reply at LF; retain clean-EOF compatibility if required.
+    resp, err := bufio.NewReader(conn).ReadString('\n')
+    if err != nil && err != io.EOF {
+        panic(err) // Do not accept an incomplete prefix after a reset.
+    }
+    fmt.Print(resp) // {"busId":1}\n
 }
 ```
 

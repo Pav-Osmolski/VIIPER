@@ -197,7 +197,9 @@ func new(o *device.CreateOptions, edge bool) (*DualSense, error) {
 		if newMeta.BatteryVoltage != 0 {
 			metaState.BatteryVoltage = newMeta.BatteryVoltage
 		}
-		metaState.ShellColor = newMeta.ShellColor
+		if newMeta.ShellColor != "" {
+			metaState.ShellColor = newMeta.ShellColor
+		}
 	}
 
 	d := &DualSense{

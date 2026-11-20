@@ -15,13 +15,28 @@ import (
 
 const clientTemplateTS = `{{writeFileHeaderTS}}
 import { Socket } from 'net';
-import { TextDecoder, TextEncoder } from 'util';
+import { TextEncoder } from 'util';
 import type * as Types from './types/ManagementDtos';
 import { ViiperDevice } from './ViiperDevice';
 import { performAuthHandshake } from './utils/auth';
 
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
+
+// Retain compatibility with pretty-printed JSON without confusing an internal
+// newline with the terminator. JSON.parse below still performs validation.
+function replyIsIncomplete(bytes: Buffer): boolean {
+	let depth = 0, quoted = false, escaped = false;
+	for (const byte of bytes) {
+		if (quoted) {
+			if (escaped) escaped = false;
+			else if (byte === 92) escaped = true;
+			else if (byte === 34) quoted = false;
+		} else if (byte === 34) quoted = true;
+		else if (byte === 123 || byte === 91) depth++;
+		else if (byte === 125 || byte === 93) depth--;
+	}
+	return depth > 0 || quoted;
+}
 
 /**
  * VIIPER management & streaming API client.
@@ -55,6 +70,13 @@ export class ViiperClient {
 	private async sendRequest<T>(path: string, payload?: string | null): Promise<T> {
 		return new Promise<T>(async (resolve, reject) => {
 			const socket = new Socket();
+			let settled = false;
+			const fail = (error: Error) => {
+				if (settled) return;
+				settled = true;
+				socket.destroy();
+				reject(error);
+			};
 			socket.connect(this.port, this.host, async () => {
 				try {
 					socket.setNoDelay(true);
@@ -67,41 +89,44 @@ export class ViiperClient {
 					let line = path; // preserve case
 					if (payload && payload.length > 0) line += ' ' + payload;
 					line += '\0';
-					wrappedSocket.write(encoder.encode(line));
-					
-					let buffer = '';
-					const handleData = (chunk: Buffer) => {
-						buffer += decoder.decode(chunk);
-						const nlIdx = buffer.indexOf('\n');
-						if (nlIdx !== -1) {
-							const jsonLine = buffer.slice(0, nlIdx);
-							let parsed: any;
-							try {
-								parsed = JSON.parse(jsonLine);
-							} catch (e) {
-								wrappedSocket.end();
-								reject(e);
-								return;
-							}
+					const chunks: Buffer[] = [];
+					const finish = (bytes: Buffer) => {
+						if (settled) return;
+						try {
+							const parsed = JSON.parse(bytes.toString('utf8'));
 							if (parsed && typeof parsed === 'object' && 'status' in parsed && parsed.status >= 400) {
-								wrappedSocket.end();
-								reject(new Error(String(parsed.status) + ' ' + parsed.title + ': ' + parsed.detail));
-								return;
+								throw new Error(String(parsed.status) + ' ' + parsed.title + ': ' + parsed.detail);
 							}
+							settled = true;
 							wrappedSocket.end();
 							resolve(parsed as T);
-						}
+						} catch (error) { fail(error as Error); }
 					};
-					
+					const handleData = (chunk: Buffer) => {
+						if (settled) return;
+						let start = 0;
+						for (let index = 0; index < chunk.length; index++) {
+							if (chunk[index] !== 10) continue;
+							chunks.push(chunk.subarray(start, index + 1));
+							start = index + 1;
+							const bytes = Buffer.concat(chunks);
+							if (!replyIsIncomplete(bytes)) { finish(bytes); return; }
+						}
+						chunks.push(chunk.subarray(start));
+					};
 					wrappedSocket.on('data', handleData);
+					wrappedSocket.on('error', fail);
+					wrappedSocket.on('end', () => finish(Buffer.concat(chunks)));
+					wrappedSocket.on('close', () => {
+						if (!settled) fail(new Error('Connection closed before receiving a complete reply'));
+					});
+					wrappedSocket.write(encoder.encode(line));
 				} catch (e) {
-					socket.end();
-					reject(e);
+					fail(e as Error);
 				}
 			});
 
-			socket.on('error', reject);
-			socket.on('end', () => {/* noop */});
+			socket.on('error', fail);
 		});
 	}
 

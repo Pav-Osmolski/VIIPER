@@ -15,7 +15,7 @@ import (
 const clientTemplate = `{{.Header}}
 use crate::error::{ProblemJson, ViiperError};
 use crate::types::*;
-use std::io::{Read, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::net::{SocketAddr, TcpStream, Shutdown};
 
 /// Stream wrapper that can be either plain or encrypted
@@ -106,7 +106,13 @@ impl ViiperClient {
         stream.write_all(b"\0")?;
 
         let mut buf = Vec::new();
-        stream.read_to_end(&mut buf)?;
+        let mut reader = BufReader::new(stream);
+        loop {
+            let read = reader.read_until(b'\n', &mut buf)?;
+            let incomplete = !buf.iter().all(u8::is_ascii_whitespace) &&
+                matches!(serde_json::from_slice::<serde_json::Value>(&buf), Err(error) if error.is_eof());
+            if read == 0 || !incomplete { break; }
+        }
 
         let response = String::from_utf8(buf)
             .map_err(|_| ViiperError::UnexpectedResponse("invalid UTF-8".into()))?

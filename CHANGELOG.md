@@ -4,6 +4,36 @@ Curated release history inherited by the Pav-Osmolski VIIPER fork.
 These records describe their original releases, not a promise that every
 upstream asset is republished here. For DS4Windows, use its bundled backend.
 
+## Unreleased
+
+Preserve DualSense and DualSense Edge shell-colour metadata when creation options omit it or provide an empty value, and when partial metadata updates omit or clear the field. Explicit non-empty colours remain supported, and metadata updates do not rewrite an existing serial/MAC identity. Adapted from [Alia5's shell-colour correction](https://github.com/Alia5/VIIPER/commit/a02b5cb72065466064982bd63bff539b63515aac); thanks to [@Alia5](https://github.com/Alia5).
+
+## [0.1.17](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.17) - 2026-10-25
+
+- Expose the existing DualShock 4 microphone capture state through the narrow microphone-interface endpoint, including the audio-only companion used alongside Xbox output. DS4Windows can now detect when Windows starts recording and arm the physical Bluetooth microphone route. Thanks to [@1hezio](https://github.com/1hezio) for the logs in [DS4Windows issue #80](https://github.com/Pav-Osmolski/DS4Windows/issues/80). Regression tests cover every DS4 registration alias, inactive/active transitions, buffered PCM delivery, exact device selection and non-draining status reads.
+
+## [0.1.16](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.16) - 2026-10-25
+
+- Add a read-only, versioned controller-information endpoint for the selected virtual device, with descriptor identity for all output types, actual DS4/DualSense/Edge factory reports, public Xbox One firmware/hardware versions and supported status metadata. No device writes, stream reopen or operation authority are exposed. Paired with DS4Windows 5.0.49.
+- Treat zero USB identity-string indices as unavailable. Descriptor zero contains language IDs and must never appear as a serial number in Controller info. Cover absent/present strings and unchanged controller ownership across actual device implementations.
+
+## [0.1.15](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.15) - 2026-10-24
+
+- Correct the DualShock 4 factory report's two 16-byte date/time fields. The time previously started one byte early, causing host tools to display `Sep 17 20211 1:34:00` instead of `Sep 17 2021 11:34:00`. Thanks to [@Jobima1st](https://github.com/Jobima1st) for following up in [DS4Windows #75](https://github.com/Pav-Osmolski/DS4Windows/issues/75).
+- Add host-decoding regression coverage through actual USB GET_REPORT handlers for DualShock 4, DualSense and DualSense Edge, including custom dates, padding, version fields and short reads. Audit the other emulated controller metadata formats; no matching date/time overlap was found. Paired with DS4Windows 5.0.48.
+
+## [0.1.14](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.14) - 2026-10-24
+
+- Gracefully finish complete one-shot management replies before closing their TCP connection, bounding the drain by time and input bytes and keeping it interruptible by server shutdown. Streaming controller/audio connections, authentication, framing and operation retries are unchanged. Thanks to [@cns00](https://github.com/cns00) for the diagnostic comparisons and successful final paired-preview testing in [DS4Windows #66](https://github.com/Pav-Osmolski/DS4Windows/issues/66), also reported in [upstream #153](https://github.com/hbashton/DS4Windows/issues/153). The reporter confirmed consistently reaching Ready on 24 October. Paired with DS4Windows 5.0.47, including its separate app/installer readiness-check correction. No hardware fault or universal cause has been established.
+- The earlier isolated comparison improved from 77/400 failed requests to 3/400 with graceful closing; those diagnostic measurements are historical and do not imply every possible future connection reset is eliminated. Implementation and regression coverage: [PR #9](https://github.com/Pav-Osmolski/VIIPER/pull/9).
+
+## [0.1.13](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.13) - 2026-10-23
+
+- Add strict, versioned live battery/power status updates for virtual DualShock 4, DualSense/Edge and NS2 Pro. Preserve controller identity, measured voltage and existing input packet formats. Paired with DS4Windows 5.0.46 after successful maintainer USB/Bluetooth testing. Thanks to [@Jobima1st](https://github.com/Jobima1st) for [DS4Windows #75](https://github.com/Pav-Osmolski/DS4Windows/issues/75) and [upstream #111](https://github.com/hbashton/DS4Windows/issues/111).
+- Clarify the existing LF-terminated management reply format and finish Go, generated C# and Rust client replies at LF rather than waiting for connection close. Preserve clean-EOF compatibility and reject read errors before a complete reply. Keep JSON/API error validation and authenticated-record checks.
+- Preserve split UTF-8 characters in generated C# and TypeScript management replies. Make TypeScript requests reject incomplete or failed connections instead of remaining pending, and handle errors on the authenticated socket wrapper.
+- The management-reply changes preserve the server wire format and do not change drivers. Thanks to [@cns00](https://github.com/cns00) for the diagnostic reports in [DS4Windows #66](https://github.com/Pav-Osmolski/DS4Windows/issues/66) and [upstream #153](https://github.com/hbashton/DS4Windows/issues/153). The reporter's connection-reset issue remains unconfirmed.
+
 ## [0.1.11](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.11) — 2026-10-15
 
 - Paired with DS4Windows 5.0.25 after successful maintainer testing of the combined package.

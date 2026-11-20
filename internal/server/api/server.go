@@ -208,33 +208,36 @@ func (s *Server) serve(ln net.Listener) {
 	}
 }
 
-func (s *Server) writeError(w io.Writer, err error) {
+func (s *Server) writeError(w io.Writer, err error) bool {
 	apiErr := apierror.WrapError(err)
 	problemJSON, _ := json.Marshal(apiErr)
-	_, err = fmt.Fprintf(w, "%s\n", string(problemJSON))
+	n, err := fmt.Fprintf(w, "%s\n", string(problemJSON))
 	if err != nil {
 		s.logger.Error("failed to write error response", "error", err)
 	}
+	return err == nil && n == len(problemJSON)+1
 }
 
-func (s *Server) writeOK(w io.Writer, rest string) {
-	if rest == "" {
-		_, err := fmt.Fprintln(w)
-		if err != nil {
-			s.logger.Error("failed to write OK response", "error", err)
-		}
-	} else {
-		_, err := fmt.Fprintf(w, "%s\n", rest)
-		if err != nil {
-			s.logger.Error("failed to write OK response", "error", err)
-		}
+func (s *Server) writeOK(w io.Writer, rest string) bool {
+	n, err := fmt.Fprintf(w, "%s\n", rest)
+	if err != nil {
+		s.logger.Error("failed to write OK response", "error", err)
 	}
+	return err == nil && n == len(rest)+1
 }
 
 func (s *Server) handleConn(conn net.Conn, connCtx context.Context) {
-	defer s.finishConnection(conn)
-
 	connLogger := s.logger.With("remote", conn.RemoteAddr().String())
+	transport := conn
+	completedManagementReply := false
+	defer func() {
+		// Retain registration throughout the bounded drain so Server.Close
+		// can interrupt it. Never apply this to streaming or failed writes.
+		if completedManagementReply {
+			gracefulManagementClose(transport, connLogger, 250*time.Millisecond)
+		}
+		s.finishConnection(transport)
+	}()
 	r := bufio.NewReader(conn)
 	w := conn
 
@@ -339,11 +342,11 @@ func (s *Server) handleConn(conn net.Conn, connCtx context.Context) {
 		res := &Response{}
 		if err := h(req, res, connLogger); err != nil {
 			connLogger.Error("api handler error", "path", path, "error", err)
-			s.writeError(w, err)
+			completedManagementReply = s.writeError(w, err)
 			return
 		}
 		connLogger.Debug("api handler success", "path", path)
-		s.writeOK(w, res.JSON)
+		completedManagementReply = s.writeOK(w, res.JSON)
 		return
 	} else if sh, params := s.router.MatchStream(path); sh != nil {
 		connLogger.Info("api stream begin", "path", path)
@@ -478,7 +481,7 @@ func (s *Server) handleConn(conn net.Conn, connCtx context.Context) {
 		return
 	}
 	connLogger.Error("api unknown path", "path", path)
-	s.writeError(w, apierror.ErrNotFound(fmt.Sprintf("unknown path: %s", path)))
+	completedManagementReply = s.writeError(w, apierror.ErrNotFound(fmt.Sprintf("unknown path: %s", path)))
 }
 
 type bufferedReadConn struct {

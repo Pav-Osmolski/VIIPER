@@ -78,16 +78,7 @@ public class ViiperClient : IDisposable
         var requestBytes = Encoding.UTF8.GetBytes(commandLine);
         await stream.WriteAsync(requestBytes, cancellationToken);
         
-        var responseBuilder = new StringBuilder();
-        var buffer = new byte[128];
-        int bytesRead;
-        
-        while ((bytesRead = await stream.ReadAsync(buffer, cancellationToken)) > 0)
-        {
-            responseBuilder.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
-        }
-        
-		var responseJson = responseBuilder.ToString().TrimEnd('\n');
+        var responseJson = await ReadReplyAsync(stream, cancellationToken);
 		// Typed error detection (RFC 7807 style): check for status field prefix
 		if (responseJson.StartsWith("{\"status\":"))
 		{
@@ -97,6 +88,40 @@ public class ViiperClient : IDisposable
 			?? throw new InvalidOperationException("Failed to deserialize response");
         
         return response;
+    }
+
+    private static async Task<string> ReadReplyAsync(Stream stream, CancellationToken cancellationToken)
+    {
+        using var response = new MemoryStream();
+        var buffer = new byte[128];
+        int read;
+        while ((read = await stream.ReadAsync(buffer, cancellationToken)) > 0)
+        {
+            int start = 0;
+            for (int index = 0; index < read; index++)
+            {
+                if (buffer[index] != (byte)'\n') continue;
+                response.Write(buffer, start, index - start + 1);
+                start = index + 1;
+                if (!ReplyIsIncomplete(response.GetBuffer().AsSpan(0, (int)response.Length)))
+                    return Encoding.UTF8.GetString(response.ToArray()).TrimEnd('\n');
+            }
+            response.Write(buffer, start, read - start);
+        }
+        // Decode once so a multibyte UTF-8 character can span transport reads.
+        // Clean EOF supports older peers; transport/decryption errors propagate.
+        return Encoding.UTF8.GetString(response.ToArray());
+    }
+
+    private static bool ReplyIsIncomplete(ReadOnlySpan<byte> bytes)
+    {
+        try
+        {
+            var reader = new Utf8JsonReader(bytes, isFinalBlock: false, state: default);
+            if (!reader.Read()) return reader.BytesConsumed != bytes.Length;
+            return !reader.TrySkip();
+        }
+        catch (JsonException) { return false; } // The caller still rejects malformed JSON.
     }
 
     /// <summary>

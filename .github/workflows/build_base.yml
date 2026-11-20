@@ -295,6 +295,7 @@ jobs:
                   name: VIIPER-${{ matrix.target.goos }}-${{ matrix.target.goarch }}${{ inputs.artifact_suffix }}
                   path: dist/viiper-${{ matrix.target.goos }}-${{ matrix.target.goarch }}.tar.gz
                   if-no-files-found: error
+                  retention-days: ${{ contains(inputs.artifact_suffix, 'Release') && 30 || 90 }}
 
             - name: Upload artifact (Windows)
               if: ${{ inputs.upload_artifacts && matrix.target.goos == 'windows' }}
@@ -303,6 +304,7 @@ jobs:
                   name: VIIPER-${{ matrix.target.goos }}-${{ matrix.target.goarch }}${{ inputs.artifact_suffix }}
                   path: dist/viiper-${{ matrix.target.goos }}-${{ matrix.target.goarch }}.zip
                   if-no-files-found: error
+                  retention-days: ${{ contains(inputs.artifact_suffix, 'Release') && 30 || 90 }}
 
     libviiper-linux:
         name: Build libVIIPER (linux/amd64)
@@ -346,6 +348,7 @@ jobs:
                   name: libVIIPER-linux-amd64${{ inputs.artifact_suffix }}
                   path: dist/libVIIPER/libVIIPER-linux-amd64.zip
                   if-no-files-found: error
+                  retention-days: ${{ contains(inputs.artifact_suffix, 'Release') && 30 || 90 }}
 
     libviiper-windows:
         name: Build libVIIPER (windows/amd64)
@@ -401,3 +404,4 @@ jobs:
                   name: libVIIPER-windows-amd64${{ inputs.artifact_suffix }}
                   path: dist/libVIIPER/libVIIPER-windows-amd64.zip
                   if-no-files-found: error
+                  retention-days: ${{ contains(inputs.artifact_suffix, 'Release') && 30 || 90 }}
