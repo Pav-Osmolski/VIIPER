@@ -34,6 +34,7 @@ keep authentication and backend ownership intact during experiments.
 ## Releases paired with DS4Windows
 
 The tag workflow creates numeric VIIPER releases as drafts for paired testing.
+Use a title such as **VIIPER 0.1.18** and a Git tag such as `v0.1.18`.
 When DS4Windows ships a new VIIPER build, publish the matching
 [VIIPER release](https://github.com/Pav-Osmolski/VIIPER/releases) before publishing
 DS4Windows. After the VIIPER Actions checks and paired validation pass, confirm

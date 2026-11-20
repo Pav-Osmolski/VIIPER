@@ -109,29 +109,17 @@ jobs:
                   (cd release_files && sha256sum viiper-* VIIPER-* > SHA256SUMS.txt)
                   ls -la release_files/
 
-            - name: Extract build info
-              id: build_info
+            - name: Format release title
+              id: release_title
               shell: bash
-              run: |
-                  echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
-                  echo "time=$(date +'%H%M')" >> $GITHUB_OUTPUT
-                  echo "sha=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_OUTPUT
-                  TAG_NAME=${GITHUB_REF#refs/tags/}
-                  echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
-                  GIT_VERSION=$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --always || echo "")
-                  if [[ ! $GIT_VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-                    COMMIT_COUNT=$(git rev-list --count HEAD)
-                    GIT_VERSION="v0.0.0-${COMMIT_COUNT}-${GITHUB_SHA:0:7}"
-                  fi
-                  echo "version=$GIT_VERSION" >> $GITHUB_OUTPUT
-                  echo "Version from git: $GIT_VERSION"
+              run: printf 'title=VIIPER %s\n' "${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
             - name: Create Release
               id: create_release
               uses: softprops/action-gh-release@v3
               with:
-                  tag_name: ${{ steps.build_info.outputs.tag_name }}
-                  name: "VIIPER ${{ steps.build_info.outputs.version }}"
+                  tag_name: ${{ github.ref_name }}
+                  name: ${{ steps.release_title.outputs.title }}
                   body: |
                       ${{ needs.generate-changelog.outputs.changelog }}
 
