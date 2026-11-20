@@ -1542,6 +1542,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#releases-paired-with-ds4windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Releases paired with DS4Windows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1715,6 +1726,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#releases-paired-with-ds4windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Releases paired with DS4Windows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1770,6 +1792,16 @@ keep authentication and backend ownership intact during experiments.</p>
 <li><a href="../startup-diagnostics/">Startup diagnostics</a></li>
 <li><a href="../reference/">Technical records</a></li>
 </ul>
+<h2 id="releases-paired-with-ds4windows">Releases paired with DS4Windows</h2>
+<p>The tag workflow creates numeric VIIPER releases as drafts for paired testing.
+When DS4Windows ships a new VIIPER build, publish the matching
+<a href="https://github.com/Pav-Osmolski/VIIPER/releases">VIIPER release</a> before publishing
+DS4Windows. After the VIIPER Actions checks and paired validation pass, confirm
+that the release tag targets the bundled source commit and that the Windows x64
+executable and corresponding-source ZIP match the bytes in the DS4Windows
+candidate. Finalise the VIIPER release notes and changelog, publish the tested
+draft, and link it from the paired DS4Windows release notes. See the
+<a href="https://github.com/Pav-Osmolski/DS4Windows/blob/main/docs/release-process.md">DS4Windows release process</a>.</p>
 <h2 id="documentation">Documentation</h2>
 <p>Use <a href="../mkdocs-readme/">the MkDocs guide</a> to preview and build the site. The docs
 deployment workflow publishes main/tag versions automatically; do not manually
