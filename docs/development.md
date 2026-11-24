@@ -31,6 +31,19 @@ keep authentication and backend ownership intact during experiments.
 - [Startup diagnostics](startup-diagnostics.md)
 - [Technical records](reference.md)
 
+## Releases paired with DS4Windows
+
+The tag workflow creates numeric VIIPER releases as drafts for paired testing.
+Use a title such as **VIIPER 0.1.18** and a Git tag such as `v0.1.18`.
+When DS4Windows ships a new VIIPER build, publish the matching
+[VIIPER release](https://github.com/Pav-Osmolski/VIIPER/releases) before publishing
+DS4Windows. After the VIIPER Actions checks and paired validation pass, confirm
+that the release tag targets the bundled source commit and that the Windows x64
+executable and corresponding-source ZIP match the bytes in the DS4Windows
+candidate. Finalise the VIIPER release notes and changelog, publish the tested
+draft, and link it from the paired DS4Windows release notes. See the
+[DS4Windows release process](https://github.com/Pav-Osmolski/DS4Windows/blob/main/docs/release-process.md).
+
 ## Documentation
 
 Use [the MkDocs guide](mkdocs-readme.md) to preview and build the site. The docs
