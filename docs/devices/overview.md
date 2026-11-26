@@ -10,6 +10,7 @@ binary input as interchangeable with another's.
 - [DualShock 4](dualshock4.md)
 - [DualSense and DualSense Edge](dualsense.md)
 - [Switch 2 Pro](ns2pro.md)
+- [Nintendo GameCube Controller for Switch 2](ns2gamecube.md)
 - [Generic Joystick](genericjoystick.md)
 - [Keyboard](keyboard.md)
 - [Mouse](mouse.md)

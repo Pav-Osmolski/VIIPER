@@ -18,7 +18,7 @@ func TestGameCubeDescriptorAndReports(t *testing.T) {
 	desc := d.GetDescriptor()
 	require.Equal(t, uint16(0x057e), desc.Device.IDVendor)
 	require.Equal(t, uint16(0x2073), desc.Device.IDProduct)
-	require.Equal(t, uint16(0x0101), desc.Device.BcdDevice)
+	require.Equal(t, uint16(0x0100), desc.Device.BcdDevice)
 	require.Equal(t, "Nintendo GameCube Controller", desc.Strings[2])
 	require.Len(t, desc.Associations, 2)
 	require.Equal(t, uint8(4), desc.Interfaces[0].Endpoints[0].BInterval)

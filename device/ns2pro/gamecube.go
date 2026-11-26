@@ -12,7 +12,9 @@ const (
 func makeGameCubeDescriptor() usb.Descriptor {
 	d := makeDescriptor(ReportIDGameCube, ReportIDGameCubeRumble)
 	d.Device.IDProduct = GameCubePID
-	d.Device.BcdDevice = 0x0101
+	// Use a virtual revision so host applications can distinguish this
+	// device from the 0x0101 physical controller with the same VID/PID.
+	d.Device.BcdDevice = 0x0100
 	d.Associations = []usb.InterfaceAssociationDescriptor{
 		{BFirstInterface: 0, BInterfaceCount: 1, BFunctionClass: 0x03},
 		{BFirstInterface: 1, BInterfaceCount: 1, BFunctionClass: 0xFF},
