@@ -4,17 +4,16 @@ This feature branch contains an **input-only laboratory prototype**, not a
 released DS4Windows output. Its matching frontend branch is
 `Pav-Osmolski/DS4Windows:feature/directinput-output`.
 
-## Current production target (2026-10-26)
+## Registered preview identity (2026-11-25)
 
 The matched DS4Windows feature now requests a fixed sixteen-button joystick,
 six axes and one POV hat. Its profile button assignments do not change the HID
 shape. Inputs absent on a physical controller remain inactive or can be remapped.
-The sixteen-button lab device uses `FFFF:D110`; native Windows and game acceptance
-of this candidate remain required. The pending pid.codes request for `1209:D10C`
-now covers this fixed sixteen-button production design. Do not adopt that identity
-before approval. The earlier twelve-button backend remains available only for
-historical lab fixtures and has a distinct lab identity. Dated results below
-retain their original scope and do not certify this sixteen-button candidate.
+The matched preview uses [1209:D10C](https://pid.codes/1209/D10C/), approved in
+[pid.codes PR #1317](https://github.com/pidcodes/pidcodes.github.com/pull/1317).
+The HID report descriptor is identical to the sixteen-button lab descriptor.
+Historical lab fixtures retain `FFFF:D10C` and `FFFF:D110`. Native Windows and
+game acceptance with the registered identity remain open.
 
 ## Purpose and reference behaviour
 
@@ -44,13 +43,15 @@ Management type: `genericjoystick`. Creation requires:
   "deviceSpecific": {
     "version": 1,
     "experimental": true,
-    "buttonCount": 12,
+    "registered": true,
+    "buttonCount": 16,
     "neutralAxes": [0, 0, 0, 0, 0, 0]
   }
 }
 ```
 
-Only 12 and 16 buttons are supported. `neutralAxes` is optional and defaults
+`registered: true` requires exactly 16 buttons. Omit it for a 12- or 16-button
+lab fixture. `neutralAxes` is optional and defaults
 to six centred axes. A feeder using full-range pedals must supply the actual
 released-axis values at creation so startup, recovery and disconnect all use
 the same baseline. Unknown options, unsupported versions and identity
@@ -61,11 +62,11 @@ axes (X, Y, Z, Rx, Ry, Rz), one eight-direction POV hat with a null position,
 and one interrupt-IN endpoint. It declares no force-feedback or audio
 interfaces. It is not an XInput controller.
 
-The experimental identities are **FFFF:D10C** (12 buttons) and **FFFF:D110**
-(16 buttons). These are unallocated laboratory identities, not assigned USB
-IDs; settle an appropriate production identity before shipping. The different
-PIDs prevent the two button-count descriptors sharing a cached Windows identity.
-The prototype does not impersonate vJoy, Sony, Logitech or Mad Catz hardware.
+The selected descriptor supplies the `vendorId` and `productId` in the device
+metadata. The preview requires the registered pair **1209:D10C** before it opens
+the input stream. The lab pairs **FFFF:D10C** (12 buttons) and **FFFF:D110**
+(16 buttons) remain distinct to preserve historical fixture behavior and Windows
+enumeration history.
 
 Both stream frame and HID report are 16 bytes, but their axis value spaces
 are intentionally different:

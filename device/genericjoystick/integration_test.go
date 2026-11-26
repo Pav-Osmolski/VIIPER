@@ -33,11 +33,12 @@ func TestLocalhostManagementAndUSBIPReports(t *testing.T) {
 	defer bus.Close()
 	s.UsbServer.AddBus(bus)
 	client := viiperclient.New(s.ApiServer.Addr())
-	created, err := client.DeviceAddCtx(context.Background(), bus.BusID(), "genericjoystick", &device.CreateOptions{DeviceSpecific: `{"version":1,"experimental":true,"buttonCount":12}`})
+	created, err := client.DeviceAddCtx(context.Background(), bus.BusID(), "genericjoystick", &device.CreateOptions{DeviceSpecific: `{"version":1,"experimental":true,"registered":true,"buttonCount":16}`})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if created.Type != "genericjoystick" || created.DeviceSpecific["version"] != float64(1) {
+	if created.Type != "genericjoystick" || created.DeviceSpecific["version"] != float64(1) ||
+		created.DeviceSpecific["vendorId"] != float64(0x1209) || created.DeviceSpecific["productId"] != float64(0xD10C) {
 		t.Fatalf("wrong management receipt %+v", created)
 	}
 	usb := viiperTesting.NewUsbIpClient(t, s.UsbServer.Addr())
@@ -45,8 +46,8 @@ func TestLocalhostManagementAndUSBIPReports(t *testing.T) {
 	if err != nil || len(devices) != 1 {
 		t.Fatalf("enumeration: %+v %v", devices, err)
 	}
-	if devices[0].IDVendor != 0xFFFF || devices[0].IDProduct != 0xD10C {
-		t.Fatal("unexpected prototype identity")
+	if devices[0].IDVendor != 0x1209 || devices[0].IDProduct != 0xD10C {
+		t.Fatal("unexpected registered USB/IP identity")
 	}
 	imported, err := usb.AttachDevice(devices[0].BusID)
 	if err != nil {
@@ -70,7 +71,7 @@ func TestLocalhostManagementAndUSBIPReports(t *testing.T) {
 	}
 	defer stream.Close()
 	for _, state := range []genericjoystick.InputState{
-		{Hat: 8}, {X: 32767, Y: -32767, Z: 123, Rx: 456, Ry: -789, Rz: 1000, Buttons: 1, Hat: 1}, {Hat: 8},
+		{Hat: 8}, {X: 32767, Y: -32767, Z: 123, Rx: 456, Ry: -789, Rz: 1000, Buttons: 0x8001, Hat: 1}, {Hat: 8},
 	} {
 		if err := stream.WriteBinary(state); err != nil {
 			t.Fatal(err)

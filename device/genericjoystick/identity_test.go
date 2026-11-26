@@ -1,6 +1,7 @@
 package genericjoystick
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"strings"
@@ -9,6 +10,39 @@ import (
 
 	"github.com/Alia5/VIIPER/device"
 )
+
+func TestRegisteredIdentityPreservesFixedSixteenButtonReport(t *testing.T) {
+	const identity = "0123456789ABCDEF0123456789ABCDEF"
+	create := func(registered bool, count int) (*Joystick, error) {
+		args, err := json.Marshal(CreateOptions{Version: 1, Experimental: true, Registered: registered, ButtonCount: count, InstanceID: identity})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return New(&device.CreateOptions{DeviceSpecific: string(args)})
+	}
+	lab, err := create(false, 16)
+	if err != nil {
+		t.Fatal(err)
+	}
+	registered, err := create(true, 16)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := create(true, 12); err == nil {
+		t.Fatal("accepted the registered identity with a different descriptor")
+	}
+	labDescriptor, registeredDescriptor := lab.GetDescriptor(), registered.GetDescriptor()
+	if labDescriptor.Device.IDVendor != 0xFFFF || labDescriptor.Device.IDProduct != 0xD110 ||
+		registeredDescriptor.Device.IDVendor != 0x1209 || registeredDescriptor.Device.IDProduct != 0xD10C ||
+		registeredDescriptor.Strings[2] != "VIIPER Generic Joystick" || labDescriptor.Strings[3] != registeredDescriptor.Strings[3] {
+		t.Fatal("unexpected USB identity or unstable serial")
+	}
+	labReport, labError := labDescriptor.Interfaces[0].HID.ReportDescriptor.Bytes()
+	registeredReport, registeredError := registeredDescriptor.Interfaces[0].HID.ReportDescriptor.Bytes()
+	if labError != nil || registeredError != nil || !bytes.Equal(labReport, registeredReport) {
+		t.Fatal("registered identity changed the reviewed HID report descriptor")
+	}
+}
 
 func TestIndependentDefaultDevicesHaveDifferentUSBSerials(t *testing.T) {
 	first, second := newTestJoystick(t, 12), newTestJoystick(t, 12)

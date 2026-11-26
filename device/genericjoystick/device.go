@@ -20,6 +20,7 @@ import (
 type CreateOptions struct {
 	Version      int     `json:"version"`
 	Experimental bool    `json:"experimental"`
+	Registered   bool    `json:"registered,omitempty"`
 	ButtonCount  int     `json:"buttonCount"`
 	NeutralAxes  []int16 `json:"neutralAxes,omitempty"`
 	InstanceID   string  `json:"instanceId,omitempty"`
@@ -60,6 +61,9 @@ func New(o *device.CreateOptions) (*Joystick, error) {
 	if args.ButtonCount != 12 && args.ButtonCount != 16 {
 		return nil, fmt.Errorf("buttonCount must be 12 or 16")
 	}
+	if args.Registered && args.ButtonCount != 16 {
+		return nil, fmt.Errorf("registered joystick identity requires exactly 16 buttons")
+	}
 	if o.IDVendor != nil || o.IDProduct != nil {
 		return nil, fmt.Errorf("experimental joystick identity cannot be overridden")
 	}
@@ -93,7 +97,7 @@ func New(o *device.CreateOptions) (*Joystick, error) {
 		return nil, err
 	}
 	return &Joystick{input: input, neutral: neutral, presented: neutral, version: 1,
-		buttonCount: args.ButtonCount, instanceID: instanceID, descriptor: makeDescriptor(args.ButtonCount, instanceID)}, nil
+		buttonCount: args.ButtonCount, instanceID: instanceID, descriptor: makeDescriptor(args.ButtonCount, instanceID, args.Registered)}, nil
 }
 
 func (j *Joystick) GetDescriptor() *usb.Descriptor { return &j.descriptor }
@@ -104,6 +108,7 @@ func (j *Joystick) GetDeviceSpecificArgs() map[string]any {
 	configured := j.configured && !j.importClosed
 	return map[string]any{"version": ContractVersion, "experimental": true, "buttonCount": j.buttonCount,
 		"contract": "genericjoystick-v1", "inputConfigured": configured, "instanceId": j.instanceID,
+		"vendorId": j.descriptor.Device.IDVendor, "productId": j.descriptor.Device.IDProduct,
 		"neutralAxes": []int16{j.neutral.X, j.neutral.Y, j.neutral.Z, j.neutral.Rx, j.neutral.Ry, j.neutral.Rz}}
 }
 

@@ -1,9 +1,9 @@
-# pid.codes request — submitted, allocation pending
+# pid.codes allocation
 
-Prepared and submitted on 2026-10-15 for the twelve-button generic joystick in
-this fork: [pid.codes PR #1317](https://github.com/pidcodes/pidcodes.github.com/pull/1317).
-**1209:D10C is a request candidate, not an allocated identity.** Do not put it in
-the descriptor or remove the DS4Windows portable-lab restriction before approval.
+The request was submitted on 2026-10-15 and amended to cover the fixed
+sixteen-button descriptor before approval. [PR #1317](https://github.com/pidcodes/pidcodes.github.com/pull/1317)
+merged on 2026-11-25. The assigned identity [1209:D10C](https://pid.codes/1209/D10C/)
+is used in the matched preview. The original request text is retained below.
 
 The two `index.md` files below were submitted through a fork of
 [pidcodes/pidcodes.github.com](https://github.com/pidcodes/pidcodes.github.com):

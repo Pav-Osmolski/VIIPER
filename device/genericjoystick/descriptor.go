@@ -5,10 +5,10 @@ import (
 	"github.com/Alia5/VIIPER/usb/hid"
 )
 
-// Experimental IDs are deliberately distinct from vJoy and real controllers.
-// They are unallocated laboratory identities, NOT assigned production USB IDs.
-// A release must settle an appropriate identity before removing the opt-in.
-func makeDescriptor(buttonCount int, instanceID string) usb.Descriptor {
+// pid.codes PR #1317 allocates this pair to the fixed sixteen-button descriptor.
+const registeredVendorID, registeredProductID = 0x1209, 0xD10C
+
+func makeDescriptor(buttonCount int, instanceID string, registered bool) usb.Descriptor {
 	items := []hid.Item{
 		hid.ReportID{ID: ContractVersion},
 		hid.Usage{Usage: hid.UsageX}, hid.Usage{Usage: hid.UsageY},
@@ -38,10 +38,17 @@ func makeDescriptor(buttonCount int, instanceID string) usb.Descriptor {
 		hid.UsagePage{Page: hid.UsagePageGenericDesktop}, hid.Usage{Usage: hid.UsageJoystick},
 		hid.Collection{Kind: hid.CollectionApplication, Items: items},
 	}}
+	// Historical diagnostic fixtures keep their distinct laboratory identities.
+	vendorID, productID := uint16(0xFFFF), uint16(0xD100+buttonCount)
+	productName := "VIIPER Experimental Legacy Joystick"
+	if registered {
+		vendorID, productID = registeredVendorID, registeredProductID
+		productName = "VIIPER Generic Joystick"
+	}
 	return usb.Descriptor{
 		Device: usb.DeviceDescriptor{
-			BcdUSB: 0x0200, BMaxPacketSize0: 64, IDVendor: 0xFFFF,
-			IDProduct: uint16(0xD100 + buttonCount), BcdDevice: 0x0100,
+			BcdUSB: 0x0200, BMaxPacketSize0: 64, IDVendor: vendorID,
+			IDProduct: productID, BcdDevice: 0x0100,
 			IManufacturer: 1, IProduct: 2, ISerialNumber: 3, BNumConfigurations: 1, Speed: 2,
 		},
 		Interfaces: []usb.InterfaceConfig{{
@@ -52,6 +59,6 @@ func makeDescriptor(buttonCount int, instanceID string) usb.Descriptor {
 			},
 			Endpoints: []usb.EndpointDescriptor{{BEndpointAddress: 0x81, BMAttributes: 3, WMaxPacketSize: ReportSize, BInterval: 4}},
 		}},
-		Strings: map[uint8]string{0: "\u0409", 1: "VIIPER", 2: "VIIPER Experimental Legacy Joystick", 3: "VIIPER-GJ1-" + instanceID},
+		Strings: map[uint8]string{0: "\u0409", 1: "VIIPER", 2: productName, 3: "VIIPER-GJ1-" + instanceID},
 	}
 }
