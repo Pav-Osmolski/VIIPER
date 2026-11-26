@@ -6,6 +6,8 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
+- Add the virtual Nintendo GameCube Controller for Switch 2 over USB/IP, with native and common input reports, independent analog trigger travel and clicks, and single-motor rumble. Protocol references include [SDL](https://github.com/libsdl-org/SDL/blob/main/src/joystick/hidapi/SDL_hidapi_switch2.c) and [ndeadly's Switch 2 research](https://github.com/ndeadly/switch2_controller_research).
+
 ## [0.1.19](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.19) - 2026-11-26
 
 - **Generic Joystick is ready for normal DS4Windows use.** After the wait for approval, [pid.codes assigned USB ID 1209:D10C](https://github.com/pidcodes/pidcodes.github.com/pull/1317) to the input-only virtual joystick. It exposes six axes, sixteen buttons and one eight-direction POV hat for DirectInput and WinMM. Historical lab devices retain their own identities. [VIIPER PR #4](https://github.com/Pav-Osmolski/VIIPER/pull/4)

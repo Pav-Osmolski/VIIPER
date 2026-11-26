@@ -13,6 +13,8 @@ type InputState struct {
 	LX, LY uint16
 	RX, RY uint16
 
+	LeftTrigger, RightTrigger uint8
+
 	AccelX, AccelY, AccelZ int16
 	GyroX, GyroY, GyroZ    int16
 }

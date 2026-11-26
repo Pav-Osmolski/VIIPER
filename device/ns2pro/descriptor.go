@@ -9,7 +9,13 @@ const microsoftOS10VendorCode = 0x20
 
 const microsoftOS10DeviceInterfaceGUID = "{7D8F1E5C-9D89-4E0D-A2F0-6D10F1F89A8F}"
 
+var reportDescriptor = makeReportDescriptor(ReportIDPro, ReportIDOutput)
+
 func MakeDescriptor() usb.Descriptor {
+	return makeDescriptor(ReportIDPro, ReportIDOutput)
+}
+
+func makeDescriptor(nativeID, outputID uint8) usb.Descriptor {
 	return usb.Descriptor{
 		Device: usb.DeviceDescriptor{
 			BcdUSB:             0x0200,
@@ -57,7 +63,7 @@ func MakeDescriptor() usb.Descriptor {
 							{Type: usb.ReportDescType},
 						},
 					},
-					ReportDescriptor: reportDescriptor,
+					ReportDescriptor: makeReportDescriptor(nativeID, outputID),
 				},
 				Endpoints: []usb.EndpointDescriptor{
 					{BEndpointAddress: EndpointHIDIn, BMAttributes: 0x03, WMaxPacketSize: 64, BInterval: 1},
@@ -92,57 +98,59 @@ func MakeDescriptor() usb.Descriptor {
 	}
 }
 
-var reportDescriptor = hid.ReportDescriptor{
-	Items: []hid.Item{
-		hidShort(hid.ItemTypeGlobal, 0x0, 0x01),
-		hidShort(hid.ItemTypeLocal, 0x0, 0x05),
-		hidShort(hid.ItemTypeMain, 0xA, 0x01),
-		hidShort(hid.ItemTypeGlobal, 0x8, ReportIDCommon),
-		hidShort(hid.ItemTypeGlobal, 0x0, 0xFF),
-		hidShort(hid.ItemTypeLocal, 0x0, 0x01),
-		hidShort(hid.ItemTypeGlobal, 0x1, 0x00),
-		hidShort(hid.ItemTypeGlobal, 0x2, 0xFF, 0x00),
-		hidShort(hid.ItemTypeGlobal, 0x9, 0x3F),
-		hidShort(hid.ItemTypeGlobal, 0x7, 0x08),
-		hidShort(hid.ItemTypeMain, 0x8, 0x02),
-		hidShort(hid.ItemTypeGlobal, 0x8, ReportIDPro),
-		hidShort(hid.ItemTypeLocal, 0x0, 0x01),
-		hidShort(hid.ItemTypeGlobal, 0x9, 0x02),
-		hidShort(hid.ItemTypeMain, 0x8, 0x02),
-		hidShort(hid.ItemTypeGlobal, 0x0, 0x09),
-		hidShort(hid.ItemTypeLocal, 0x1, 0x01),
-		hidShort(hid.ItemTypeLocal, 0x2, 0x15),
-		hidShort(hid.ItemTypeGlobal, 0x2, 0x01),
-		hidShort(hid.ItemTypeGlobal, 0x9, 0x15),
-		hidShort(hid.ItemTypeGlobal, 0x7, 0x01),
-		hidShort(hid.ItemTypeMain, 0x8, 0x02),
-		hidShort(hid.ItemTypeGlobal, 0x9, 0x01),
-		hidShort(hid.ItemTypeGlobal, 0x7, 0x03),
-		hidShort(hid.ItemTypeMain, 0x8, 0x03),
-		hidShort(hid.ItemTypeGlobal, 0x0, 0x01),
-		hidShort(hid.ItemTypeLocal, 0x0, 0x01),
-		hidShort(hid.ItemTypeMain, 0xA, 0x00),
-		hidShort(hid.ItemTypeLocal, 0x0, 0x30),
-		hidShort(hid.ItemTypeLocal, 0x0, 0x31),
-		hidShort(hid.ItemTypeLocal, 0x0, 0x33),
-		hidShort(hid.ItemTypeLocal, 0x0, 0x35),
-		hidShort(hid.ItemTypeGlobal, 0x2, 0xFF, 0x0F),
-		hidShort(hid.ItemTypeGlobal, 0x9, 0x04),
-		hidShort(hid.ItemTypeGlobal, 0x7, 0x0C),
-		hidShort(hid.ItemTypeMain, 0x8, 0x02),
-		hidShort(hid.ItemTypeMain, 0xC),
-		hidShort(hid.ItemTypeGlobal, 0x0, 0xFF),
-		hidShort(hid.ItemTypeLocal, 0x0, 0x02),
-		hidShort(hid.ItemTypeGlobal, 0x2, 0xFF, 0x00),
-		hidShort(hid.ItemTypeGlobal, 0x9, 0x34),
-		hidShort(hid.ItemTypeGlobal, 0x7, 0x08),
-		hidShort(hid.ItemTypeMain, 0x8, 0x02),
-		hidShort(hid.ItemTypeGlobal, 0x8, ReportIDOutput),
-		hidShort(hid.ItemTypeLocal, 0x0, 0x01),
-		hidShort(hid.ItemTypeGlobal, 0x9, 0x3F),
-		hidShort(hid.ItemTypeMain, 0x9, 0x02),
-		hidShort(hid.ItemTypeMain, 0xC),
-	}}
+func makeReportDescriptor(nativeID, outputID uint8) hid.ReportDescriptor {
+	return hid.ReportDescriptor{
+		Items: []hid.Item{
+			hidShort(hid.ItemTypeGlobal, 0x0, 0x01),
+			hidShort(hid.ItemTypeLocal, 0x0, 0x05),
+			hidShort(hid.ItemTypeMain, 0xA, 0x01),
+			hidShort(hid.ItemTypeGlobal, 0x8, ReportIDCommon),
+			hidShort(hid.ItemTypeGlobal, 0x0, 0xFF),
+			hidShort(hid.ItemTypeLocal, 0x0, 0x01),
+			hidShort(hid.ItemTypeGlobal, 0x1, 0x00),
+			hidShort(hid.ItemTypeGlobal, 0x2, 0xFF, 0x00),
+			hidShort(hid.ItemTypeGlobal, 0x9, 0x3F),
+			hidShort(hid.ItemTypeGlobal, 0x7, 0x08),
+			hidShort(hid.ItemTypeMain, 0x8, 0x02),
+			hidShort(hid.ItemTypeGlobal, 0x8, nativeID),
+			hidShort(hid.ItemTypeLocal, 0x0, 0x01),
+			hidShort(hid.ItemTypeGlobal, 0x9, 0x02),
+			hidShort(hid.ItemTypeMain, 0x8, 0x02),
+			hidShort(hid.ItemTypeGlobal, 0x0, 0x09),
+			hidShort(hid.ItemTypeLocal, 0x1, 0x01),
+			hidShort(hid.ItemTypeLocal, 0x2, 0x15),
+			hidShort(hid.ItemTypeGlobal, 0x2, 0x01),
+			hidShort(hid.ItemTypeGlobal, 0x9, 0x15),
+			hidShort(hid.ItemTypeGlobal, 0x7, 0x01),
+			hidShort(hid.ItemTypeMain, 0x8, 0x02),
+			hidShort(hid.ItemTypeGlobal, 0x9, 0x01),
+			hidShort(hid.ItemTypeGlobal, 0x7, 0x03),
+			hidShort(hid.ItemTypeMain, 0x8, 0x03),
+			hidShort(hid.ItemTypeGlobal, 0x0, 0x01),
+			hidShort(hid.ItemTypeLocal, 0x0, 0x01),
+			hidShort(hid.ItemTypeMain, 0xA, 0x00),
+			hidShort(hid.ItemTypeLocal, 0x0, 0x30),
+			hidShort(hid.ItemTypeLocal, 0x0, 0x31),
+			hidShort(hid.ItemTypeLocal, 0x0, 0x33),
+			hidShort(hid.ItemTypeLocal, 0x0, 0x35),
+			hidShort(hid.ItemTypeGlobal, 0x2, 0xFF, 0x0F),
+			hidShort(hid.ItemTypeGlobal, 0x9, 0x04),
+			hidShort(hid.ItemTypeGlobal, 0x7, 0x0C),
+			hidShort(hid.ItemTypeMain, 0x8, 0x02),
+			hidShort(hid.ItemTypeMain, 0xC),
+			hidShort(hid.ItemTypeGlobal, 0x0, 0xFF),
+			hidShort(hid.ItemTypeLocal, 0x0, 0x02),
+			hidShort(hid.ItemTypeGlobal, 0x2, 0xFF, 0x00),
+			hidShort(hid.ItemTypeGlobal, 0x9, 0x34),
+			hidShort(hid.ItemTypeGlobal, 0x7, 0x08),
+			hidShort(hid.ItemTypeMain, 0x8, 0x02),
+			hidShort(hid.ItemTypeGlobal, 0x8, outputID),
+			hidShort(hid.ItemTypeLocal, 0x0, 0x01),
+			hidShort(hid.ItemTypeGlobal, 0x9, 0x3F),
+			hidShort(hid.ItemTypeMain, 0x9, 0x02),
+			hidShort(hid.ItemTypeMain, 0xC),
+		}}
+}
 
 func hidShort(itemType hid.ItemType, tag uint8, data ...uint8) hid.AnyItem {
 	return hid.AnyItem{Type: itemType, Tag: tag, Data: hid.Data(data)}

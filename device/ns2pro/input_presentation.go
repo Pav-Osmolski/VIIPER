@@ -16,6 +16,7 @@ type ns2InputReportSequencer struct {
 	mu sync.Mutex
 
 	activeReportID  uint8
+	nativeReportID  uint8
 	featureFlags    uint8
 	meta            MetaState
 	reportCounter32 uint32
@@ -32,6 +33,7 @@ func newNS2InputReportSequencer(meta MetaState,
 	}
 	return &ns2InputReportSequencer{
 		activeReportID: ReportIDPro,
+		nativeReportID: ReportIDPro,
 		featureFlags:   FeatureButtons | FeatureSticks,
 		meta:           meta,
 		// The fixed scheduler validates its canonical idle report during
@@ -69,8 +71,10 @@ func (s *ns2InputReportSequencer) buildInterruptInto(state *InputState,
 			motionTimestamp = uint32(time.Since(s.motionStart).Microseconds())
 			s.lastMotionTS = motionTimestamp
 		}
-		return state.buildCommonReportInto(destination, s.reportCounter32,
-			motionTimestamp, features, meta)
+		return s.buildCommonInto(state, destination, motionTimestamp, features, meta)
+	case ReportIDGameCube:
+		s.reportCounter8++
+		return state.buildGameCubeReportInto(destination, s.reportCounter8, features, meta)
 	case ReportIDPro:
 		s.reportCounter8++
 		return state.buildProReportInto(destination, s.reportCounter8,
@@ -97,8 +101,9 @@ func (s *ns2InputReportSequencer) buildControlInto(state *InputState,
 	}
 	switch reportID {
 	case ReportIDCommon:
-		return state.buildCommonReportInto(destination, s.reportCounter32,
-			s.lastMotionTS, s.featureFlags, s.meta)
+		return s.buildCommonInto(state, destination, s.lastMotionTS, s.featureFlags, s.meta)
+	case ReportIDGameCube:
+		return state.buildGameCubeReportInto(destination, s.reportCounter8, s.featureFlags, s.meta)
 	case ReportIDPro:
 		return state.buildProReportInto(destination, s.reportCounter8,
 			s.featureFlags, s.meta)
@@ -114,7 +119,7 @@ func (s *ns2InputReportSequencer) setMeta(meta MetaState) {
 }
 
 func (s *ns2InputReportSequencer) setActiveReportID(reportID uint8) bool {
-	if reportID != ReportIDCommon && reportID != ReportIDPro {
+	if reportID != ReportIDCommon && reportID != s.nativeReportID {
 		return false
 	}
 	s.mu.Lock()
@@ -610,7 +615,7 @@ func (d *NS2Pro) InputReportSnapshotCurrent(version uint64) bool {
 }
 
 func (d *NS2Pro) SupportsInputReportSnapshot(reportID uint8) bool {
-	return reportID == 0 || reportID == ReportIDCommon || reportID == ReportIDPro
+	return reportID == 0 || reportID == ReportIDCommon || reportID == d.inputReports.nativeReportID
 }
 
 // BuildInputReportInto is the allocation-free compatibility surface. The

@@ -44,6 +44,7 @@ type NS2Pro struct {
 	outputCallback             func(OutputState)
 	outputVersion              uint64
 	descriptor                 usb.Descriptor
+	gameCube                   bool
 
 	protoMu           sync.Mutex
 	featureMask       uint8
@@ -52,6 +53,10 @@ type NS2Pro struct {
 }
 
 func New(o *device.CreateOptions) (*NS2Pro, error) {
+	return newDevice(o, false)
+}
+
+func newDevice(o *device.CreateOptions, gameCube bool) (*NS2Pro, error) {
 	metaState := defaultMetaState()
 	if o != nil && o.DeviceSpecific != "" {
 		var newMeta struct {
@@ -92,6 +97,12 @@ func New(o *device.CreateOptions) (*NS2Pro, error) {
 		metaState:    metaState,
 		descriptor:   MakeDescriptor(),
 		inputReports: newNS2InputReportSequencer(*metaState, now),
+	}
+	if gameCube {
+		d.gameCube = true
+		d.descriptor = makeGameCubeDescriptor()
+		d.inputReports.nativeReportID = ReportIDGameCube
+		d.inputReports.activeReportID = ReportIDGameCube
 	}
 	input, err := inputpresentation.NewFixedReportSchedulerWithOverflowFault(
 		InputReportSize, neutral, d.inputReports.buildCurrentInto,
@@ -245,13 +256,12 @@ func (d *NS2Pro) HandleControl(bmRequestType, bRequest uint8, wValue, wIndex uin
 	reportID := uint8(wValue)
 
 	if bmRequestType == hidClassRequestIn && bRequest == hidGetReport && reportType == reportTypeInput {
-		switch reportID {
-		case ReportIDCommon, ReportIDPro, 0:
+		if d.SupportsInputReportSnapshot(reportID) {
 			return d.inputReportForID(reportID), true
 		}
 	}
 
-	if bmRequestType == hidClassRequestOut && bRequest == hidSetReport && reportType == reportTypeOutput && reportID == ReportIDOutput {
+	if bmRequestType == hidClassRequestOut && bRequest == hidSetReport && reportType == reportTypeOutput && reportID == d.outputReportID() {
 		d.handleOutputReport(data)
 		return nil, true
 	}
@@ -328,6 +338,11 @@ func (d *NS2Pro) serialNumber() string {
 
 func (d *NS2Pro) handleOutputReport(out []byte) {
 	if len(out) == 0 {
+		return
+	}
+
+	if d.gameCube {
+		d.handleGameCubeRumble(out)
 		return
 	}
 
