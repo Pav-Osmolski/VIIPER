@@ -7,8 +7,8 @@
 Use [Pav-Osmolski/DS4Windows Releases](https://github.com/Pav-Osmolski/DS4Windows/releases)
 and follow [the app setup guide](https://github.com/Pav-Osmolski/DS4Windows/blob/main/docs/getting-started.md).
 The Setup EXE includes the matching backend and driver; portable users extract
-the whole package and retain its backend files. Use Settings > Install / Repair
-VIIPER when requested. Restart Windows if setup asks.
+the whole package and retain its backend files. Use **Settings > Components > Install / Repair
+VIIPER** when requested. Restart Windows if setup asks.
 
 Installed copies use `%ProgramFiles%\DS4Windows\VIIPER`; portable copies keep
 their backend beside DS4Windows. The app verifies the expected executable,

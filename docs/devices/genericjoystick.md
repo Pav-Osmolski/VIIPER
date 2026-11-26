@@ -1,19 +1,35 @@
-# Generic joystick v1
+# Generic Joystick v1
 
-This input-only device uses the standard DS4Windows startup path with the
-matching VIIPER backend. Its frontend branch is
-`Pav-Osmolski/DS4Windows:feature/directinput-output`.
+This input-only device is available from VIIPER 0.1.19 and DS4Windows 5.0.84.
+DS4Windows uses its normal startup and bundles the matching backend in the
+standard installer and portable ZIP.
 
-## Registered identity
+## USB identity compatibility
 
-The matched DS4Windows feature now requests a fixed sixteen-button joystick,
-six axes and one POV hat. Its profile button assignments do not change the HID
-shape. Inputs absent on a physical controller remain inactive or can be remapped.
-The registered device uses [1209:D10C](https://pid.codes/1209/D10C/), approved in
-[pid.codes PR #1317](https://github.com/pidcodes/pidcodes.github.com/pull/1317).
-The HID report descriptor is identical to the sixteen-button lab descriptor.
-Historical lab fixtures retain `FFFF:D10C` and `FFFF:D110`. Native Windows and
-game acceptance depends on the Windows and game configuration.
+pid.codes assigned PID `D10C` under its shared VID `1209` to Pav-Osmolski for
+the **VIIPER Generic Joystick**. This input-only virtual USB HID device exposes
+six absolute axes, sixteen buttons and one eight-direction POV hat with a
+neutral position. [Registry entry](https://pid.codes/1209/D10C/) ·
+[Allocation request](https://github.com/pidcodes/pidcodes.github.com/pull/1317)
+
+`1209:D10C` identifies this implementation and compatible revisions. Preserve
+the host-visible USB and HID contract when reusing the identity, including
+interfaces, endpoints, report IDs, axis and button usages, value ranges and
+manufacturer and product strings, and the per-instance serial scheme.
+Per-profile mappings, axis roles and trigger resting positions can change
+while keeping the advertised device contract intact.
+
+Independently distributed derivatives that materially change the USB
+descriptor, interfaces, report layout or device identity should obtain their
+own VID:PID allocation. VIIPER will use a separate allocation for incompatible
+device revisions. This guidance applies to USB identity compatibility.
+The VIIPER implementation remains available under GPL-3.0-or-later, with
+the rights to use, modify and redistribute the code under that licence.
+[VIIPER licence](https://github.com/Pav-Osmolski/VIIPER/blob/main/LICENSE.txt)
+
+Historical lab fixtures use `FFFF:D10C` and `FFFF:D110`. The registered version
+retains the sixteen-button lab HID report descriptor. Windows or a game may
+require new bindings after moving from a lab identity to the registered one.
 
 ## Purpose and reference behaviour
 
@@ -35,7 +51,7 @@ unverified.
 
 ## Device and contract
 
-Management type: `genericjoystick`. Creation requires:
+Management type: `genericjoystick`. Create the registered device with:
 
 ```json
 {
@@ -87,9 +103,8 @@ The existing fixed-report scheduler coalesces continuous axis motion while
 preserving button/hat boundaries. It enforces a 50 ms maximum ordered age,
 neutralizes faulty history and rejects stale producer leases. Stream loss
 retires the producer and schedules configured neutral. Endpoint retirement
-starts a neutral generation rather than replaying an old press. This prototype
-does not promise force feedback, audio, advanced controller features or every
-legacy game's compatibility.
+starts a neutral generation rather than replaying an old press. A game must
+accept standard joystick input through DirectInput or WinMM.
 
 ## Validation tools
 
@@ -102,7 +117,7 @@ on exit. `--hold=2s` controls the duration of each step. Never point it at a
 DS4Windows-managed server. The feeder does not install a driver or perform
 native attach; a server configured for automatic native attach may do so.
 
-An actual Windows check requires the prototype backend, an already verified
+A native Windows lab check requires the matching lab backend, an already verified
 matching USB/IP driver, a separately configured local lab server and explicit
 native attachment. Do not substitute this binary into the released app's
 managed backend folder or bypass package hashes. No installer or driver
@@ -114,7 +129,7 @@ DirectInput's DIJOYSTATE and WinMM's JOYINFOEX. Check all axis endpoints,
 neutral, buttons, hat diagonals and disconnect. Keep driver/attach ownership
 with the lab process; the probe only reads.
 
-## Remaining stages
+## Historical Windows lab and current synthetic checks
 
 The DS4Windows feature branch now supplies an isolated Windows lab launcher in
 `utils/GenericJoystickLab`. Its interactive feeder is this repository's
@@ -142,20 +157,20 @@ Report: `20261014-233817-ea0f280a-report.zip`. Tested VIIPER revision:
 `4e158868809eaa3c60ddb014bb2a4fc3da2e1ea1`. Detailed results are recorded in the
 frontend branch's `docs/directinput-development.md`.
 
-The synthetic lab established the native baseline at its recorded revisions.
-Subsequent physical-preview evidence is recorded below. Remaining release work
-is tracked in the frontend's
-[release checklist](https://github.com/Pav-Osmolski/DS4Windows/blob/feature/directinput-output/docs/directinput-release-checklist.md):
-production identity, normal-mode integration and built-in HidHide validation,
-then matched release packaging. NFS Underground 2, Jedi Outcast/Academy and
+On 2026-11-26, two registered 1209:D10C devices passed localhost management
+and USB/IP tests. Each kept distinct input while the other device was removed,
+and the recreated device kept its USB serial. These sockets use a userspace
+USB/IP client. DirectInput GUID retention, game bindings and installed HidHide
+remain native checks in the paired
+[DS4Windows release checklist](https://github.com/Pav-Osmolski/DS4Windows/blob/feature/directinput-output/docs/directinput-release-checklist.md). NFS Underground 2, Jedi Outcast/Academy and
 Serious Sam TFE/TSE still need tests recording edition, patches, bindings and
 controller configuration. Force feedback and arbitrary descriptor customization
 are separate future work.
 
-## DS4Windows portable physical-controller preview
+## Historical DS4Windows physical-controller preview
 
-The corresponding DS4Windows feature branch now exposes this output only in its
-hash-pinned portable lab context. It sends the requested six resting axes during
+The earlier DS4Windows preview exposed this output in a hash-pinned portable
+lab context. It sends the requested six resting axes during
 creation and waits for the versioned `genericjoystick-v1` capability response and
 `inputConfigured: true` before opening the producer. The backend reports readiness
 only after an accepted USB SET_CONFIGURATION(1). Configuration zero and exact
@@ -192,12 +207,9 @@ independently captured. The preview deliberately bypasses automatic HidHide.
 See [release preparation](../genericjoystick-release-preparation.md) for the
 coordinated backend provenance, packaging and compatibility requirements.
 
-A [pid.codes request](https://github.com/pidcodes/pidcodes.github.com/pull/1317)
-was submitted on 2026-10-15 for one twelve-button descriptor and is **pending
-approval**. Its proposed
-`1209:D10C` must not be used until assigned. The sixteen-button variant remains
-lab-only, needs native validation and must have a separate identity. Keep normal
-DS4Windows activation disabled until identity and matched packaging are ready.
+The request was amended to cover the fixed sixteen-button descriptor and
+approved on 2026-11-25. See the
+[USB identity compatibility notice](#usb-identity-compatibility).
 
 ### Optional stable instance identity
 
@@ -209,8 +221,8 @@ recreation, clients must supply the same ID for the same logical controller and
 different IDs for different controllers. The backend does not globally reserve
 caller-supplied IDs; callers must avoid duplicates. DS4Windows rejects duplicate
 physical identities and verifies the returned ID before opening/reopening input.
-The HID report layout and preview VID/PIDs are unchanged. A new serial can require
-rebinding existing games. Stable serials do not guarantee stable WinMM slot
+The same instance ID preserves the USB serial on recreation. A new serial can
+require rebinding existing games. Stable serials do not guarantee stable WinMM slot
 numbers or game-specific saved bindings. The completed two-device owner lab (r4 report `20261015-165810-0ed8a66d`)
 validated input isolation, producer reconnect, recreation and reversed creation
 order in x86/x64 DirectInput and WinMM. It retained two GUID-persistence failures:

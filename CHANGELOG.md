@@ -6,7 +6,10 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
-- Add the input-only VIIPER Generic Joystick at registered USB ID [1209:D10C](https://pid.codes/1209/D10C/). It exposes six axes, sixteen buttons, and one POV hat to DirectInput and WinMM games. Historical lab requests retain their separate identities.
+## [0.1.19](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.19) - 2026-11-26
+
+- **Generic Joystick is ready for normal DS4Windows use.** After the wait for approval, [pid.codes assigned USB ID 1209:D10C](https://github.com/pidcodes/pidcodes.github.com/pull/1317) to the input-only virtual joystick. It exposes six axes, sixteen buttons and one eight-direction POV hat for DirectInput and WinMM. Historical lab devices retain their own identities. [VIIPER PR #4](https://github.com/Pav-Osmolski/VIIPER/pull/4)
+- Thanks to [@eVenent](https://github.com/eVenent) for testing an earlier build on DualSense and sharing the Panther XL profile and dead-zone guidance that helped shape the sixteen-button design. [Testing and profile sharing](https://github.com/Pav-Osmolski/DS4Windows/discussions/64#discussioncomment-19154905)
 
 ## [0.1.18](https://github.com/Pav-Osmolski/VIIPER/tree/v0.1.18) - 2026-11-20
 

@@ -3,7 +3,9 @@
 The request was submitted on 2026-10-15 and amended to cover the fixed
 sixteen-button descriptor before approval. [PR #1317](https://github.com/pidcodes/pidcodes.github.com/pull/1317)
 merged on 2026-11-25. The assigned identity [1209:D10C](https://pid.codes/1209/D10C/)
-is used in the matched preview. The original request text is retained below.
+is used in standard DS4Windows 5.0.84 / VIIPER 0.1.19 packages. See the
+[USB identity compatibility notice](../devices/genericjoystick.md#usb-identity-compatibility).
+The original twelve-button submission and its procedure are historical records below.
 
 The two `index.md` files below were submitted through a fork of
 [pidcodes/pidcodes.github.com](https://github.com/pidcodes/pidcodes.github.com):
@@ -11,7 +13,7 @@ The two `index.md` files below were submitted through a fork of
 - `org/Pav-Osmolski/index.md`
 - `1209/D10C/index.md`
 
-The proposed owner is the maintainer of this fork, not a claim to represent
+The registered owner is the maintainer of this fork, not a claim to represent
 upstream VIIPER contributors. The requested license matches this fork's server
 and device implementation. Generated client libraries have separate notices.
 
@@ -43,7 +45,7 @@ lifecycle testing, and user gameplay tests in BeamNG.drive and the current Steam
 FlatOut 2 installation have passed. These are limited compatibility results,
 not claims about all legacy games.
 
-## Review and submission procedure
+## Historical review and submission procedure
 
 1. Obtain the fork maintainer's approval to submit this external request.
 2. Recheck the registry and open pull requests immediately before submission;
@@ -68,5 +70,5 @@ not claims about all legacy games.
   redistributed as the release identity.
 
 The experimental `FFFF:D110` PID does not imply `1209:D110` is available:
-that registry PID is already allocated to another project. The sixteen-button
-variant remains a separate lab-only investigation.
+that registry PID is already allocated to another project. The production
+sixteen-button revision uses the approved allocation `1209:D10C`.

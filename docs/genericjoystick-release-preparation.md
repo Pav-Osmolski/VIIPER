@@ -1,15 +1,14 @@
-# Generic joystick release preparation
+# Generic Joystick release preparation
 
-The production target is a fixed sixteen-button device with six axes and one
-POV hat. Automated checks cover its descriptor, all sixteen button transitions
-and producer-loss neutralization; native/game acceptance remains pending.
-Normal release remains gated on coordinated packaging and installed acceptance.
-This document does not choose a release version or
-authorize publication.
+The standard local DS4Windows 5.0.84 packages bundle VIIPER 0.1.19 and use
+the registered sixteen-button device. Automated checks cover all sixteen
+button transitions, producer-loss neutralization, and distinct reports and
+stable USB serials across two registered device lifetimes. Native game binding,
+Windows DirectInput GUID retention and installed acceptance remain open.
 
 ## Reuse the existing release pipeline
 
-1. The matched sixteen-button preview uses [the allocated USB identity 1209:D10C](https://pid.codes/1209/D10C/).
+1. The standard sixteen-button build uses [the allocated USB identity 1209:D10C](https://pid.codes/1209/D10C/).
    The twelve-button `FFFF:D10C` and sixteen-button `FFFF:D110` remain lab identities.
 2. Review the feature diff against main and choose an explicit version under
    the existing release policy. Build from the reviewed, clean source commit
@@ -27,9 +26,12 @@ authorize publication.
 5. Promote the application, setup/bootstrapper, project resources, packaging
    scripts and workflow pins together. Run existing PE/signing, payload,
    provenance, portable/installer and normal Windows acceptance checks before
-   admitting normal output or publishing the paired application release.
+   publishing the matching VIIPER release and then the paired DS4Windows release.
 
 ## Compatibility scope to retain
+
+The [USB identity compatibility notice](devices/genericjoystick.md#usb-identity-compatibility)
+defines the stable USB and HID contract for `1209:D10C`.
 
 The release notes should explain six axes, sixteen buttons and one POV, the two
 axis layouts and four trigger modes. This device is for games accepting generic

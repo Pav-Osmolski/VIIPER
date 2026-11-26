@@ -17,7 +17,7 @@ Download the matching x64 package from
 [DS4Windows Releases](https://github.com/Pav-Osmolski/DS4Windows/releases).
 The Setup EXE includes VIIPER and the pinned USB/IP driver. Portable packages
 include their matching backend; extract the complete archive. Use
-**Settings > Install / Repair VIIPER** if the app requests repair, and restart
+**Settings > Components > Install / Repair VIIPER** if the app requests repair, and restart
 Windows when setup asks. Do not independently substitute another backend or driver.
 
 Windows controller releases require Windows 10 or 11 x64. The current fork's
@@ -28,6 +28,8 @@ DS4Windows builds are unsigned; consult their release notes for signing status.
 - Virtual Xbox 360, Xbox One/Series, DualShock 4, DualSense/Edge and Switch 2 Pro controller paths.
 - Native controller feedback, adaptive triggers, audio and microphone transport
   where supported by the device, matching feeder and physical connection.
+- Input-only **Generic Joystick** for DirectInput and WinMM, with six axes,
+  sixteen buttons and a POV hat from VIIPER 0.1.19. [Device protocol and USB identity notice](docs/devices/genericjoystick.md#usb-identity-compatibility)
 - Generic keyboard and mouse devices for feeder applications.
 - TCP management and binary device streams, plus generated client libraries.
 
