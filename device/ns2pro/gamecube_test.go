@@ -2,19 +2,24 @@ package ns2pro
 
 import (
 	"context"
+	"io"
 	"testing"
+	"time"
 
+	viiperTesting "github.com/Alia5/VIIPER/_testing"
 	"github.com/Alia5/VIIPER/internal/server/api"
+	apihandler "github.com/Alia5/VIIPER/internal/server/api/handler"
 	"github.com/Alia5/VIIPER/usbip"
+	"github.com/Alia5/VIIPER/viiperclient"
+	"github.com/Alia5/VIIPER/virtualbus"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGameCubeDescriptorAndReports(t *testing.T) {
 	registration := api.GetRegistration("ns2gamecube")
 	require.NotNil(t, registration)
-	device, err := registration.CreateDevice(nil)
+	d, err := newDevice(nil, true)
 	require.NoError(t, err)
-	d := device.(*NS2Pro)
 	desc := d.GetDescriptor()
 	require.Equal(t, uint16(0x057e), desc.Device.IDVendor)
 	require.Equal(t, uint16(0x2073), desc.Device.IDProduct)
@@ -67,4 +72,59 @@ func TestGameCubeRumbleDutyAndStop(t *testing.T) {
 		require.Equal(t, byte(OutputFlagGameCubeRumble), feedback[i].Flags)
 		require.Equal(t, wanted, feedback[i].LeftRumble[0])
 	}
+}
+
+func TestGameCubeClientStreamAndUSBIPRoundTrip(t *testing.T) {
+	server := viiperTesting.NewTestServer(t)
+	defer server.UsbServer.Close()
+	defer server.ApiServer.Close()
+	routes := server.ApiServer.Router()
+	routes.Register("bus/{id}/add", apihandler.BusDeviceAdd(server.UsbServer, server.ApiServer))
+	routes.RegisterStream("bus/{busId}/{deviceid}", api.DeviceStreamHandler(server.UsbServer))
+	require.NoError(t, server.ApiServer.Start())
+	bus, err := virtualbus.NewWithBusID(1)
+	require.NoError(t, err)
+	defer bus.Close()
+	require.NoError(t, server.UsbServer.AddBus(bus))
+
+	client := viiperclient.New(server.ApiServer.Addr())
+	stream, _, err := client.AddDeviceAndConnect(context.Background(), bus.BusID(), "ns2gamecube", nil)
+	require.NoError(t, err)
+	defer stream.Close()
+	usbClient := viiperTesting.NewUsbIpClient(t, server.UsbServer.Addr())
+	devices, err := usbClient.ListDevices()
+	require.NoError(t, err)
+	require.Len(t, devices, 1)
+	imported, err := usbClient.AttachDevice(devices[0].BusID)
+	require.NoError(t, err)
+	defer imported.Conn.Close()
+
+	config, err := controlIn(imported.Conn, controlSetup(0x0200, 0, 512))
+	require.NoError(t, err)
+	require.Len(t, config, 80)
+	require.Equal(t, []byte{8, 0x0b, 0, 1, 3, 0, 0, 0}, config[9:17])
+	require.Equal(t, []byte{8, 0x0b, 1, 1, 0xff, 0, 0, 0}, config[49:57])
+
+	require.NoError(t, usbClient.Submit(imported.Conn, usbip.DirOut, 2, selectReportCommand(ReportIDGameCube), nil))
+	require.NoError(t, usbClient.Submit(imported.Conn, usbip.DirOut, 2, enableReportsCommand(), nil))
+	state := *NewInputState()
+	state.Buttons = ButtonA | ButtonZR
+	state.LeftTrigger, state.RightTrigger = 97, 232
+	wire, err := state.MarshalBinary()
+	require.NoError(t, err)
+	wire[12], wire[13] = state.LeftTrigger, state.RightTrigger
+	_, err = stream.Write(wire)
+	require.NoError(t, err)
+	expected := make([]byte, InputReportSize)
+	state.buildGameCubeReportInto(expected, 0, FeatureButtons|FeatureSticks, *defaultMetaState())
+	require.Len(t, pollInputIgnoringCounter(t, usbClient, imported.Conn, expected, viiperTesting.IntegrationTimeout), InputReportSize)
+
+	require.NoError(t, usbClient.Submit(imported.Conn, usbip.DirOut, 1,
+		[]byte{ReportIDGameCubeRumble, 0x51, 1}, nil))
+	var feedback [OutputWireSize]byte
+	require.NoError(t, stream.SetReadDeadline(time.Now().Add(viiperTesting.IntegrationTimeout)))
+	_, err = io.ReadFull(stream, feedback[:])
+	require.NoError(t, err)
+	require.Equal(t, byte(OutputFlagGameCubeRumble), feedback[32])
+	require.Equal(t, byte(255), feedback[0])
 }
