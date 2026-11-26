@@ -23,6 +23,7 @@ type ns2InputReportSequencer struct {
 	reportCounter8  uint8
 	motionStart     time.Time
 	lastMotionTS    uint32
+	gameCubeMotion  gameCubeMotionEncoder
 }
 
 func newNS2InputReportSequencer(meta MetaState,
@@ -74,7 +75,11 @@ func (s *ns2InputReportSequencer) buildInterruptInto(state *InputState,
 		return s.buildCommonInto(state, destination, motionTimestamp, features, meta)
 	case ReportIDGameCube:
 		s.reportCounter8++
-		return state.buildGameCubeReportInto(destination, s.reportCounter8, features, meta)
+		var motion *[gameCubeMotionSize]byte
+		if features&FeatureIMU != 0 {
+			motion = s.gameCubeMotion.present(*state, time.Since(s.motionStart))
+		}
+		return state.buildGameCubeReportInto(destination, s.reportCounter8, features, meta, motion)
 	case ReportIDPro:
 		s.reportCounter8++
 		return state.buildProReportInto(destination, s.reportCounter8,
@@ -103,7 +108,11 @@ func (s *ns2InputReportSequencer) buildControlInto(state *InputState,
 	case ReportIDCommon:
 		return s.buildCommonInto(state, destination, s.lastMotionTS, s.featureFlags, s.meta)
 	case ReportIDGameCube:
-		return state.buildGameCubeReportInto(destination, s.reportCounter8, s.featureFlags, s.meta)
+		var motion *[gameCubeMotionSize]byte
+		if s.featureFlags&FeatureIMU != 0 && state.gameCubeHasMotion() && s.gameCubeMotion.active {
+			motion = &s.gameCubeMotion.report
+		}
+		return state.buildGameCubeReportInto(destination, s.reportCounter8, s.featureFlags, s.meta, motion)
 	case ReportIDPro:
 		return state.buildProReportInto(destination, s.reportCounter8,
 			s.featureFlags, s.meta)
@@ -123,6 +132,9 @@ func (s *ns2InputReportSequencer) setActiveReportID(reportID uint8) bool {
 		return false
 	}
 	s.mu.Lock()
+	if reportID != s.activeReportID {
+		s.gameCubeMotion = gameCubeMotionEncoder{}
+	}
 	s.activeReportID = reportID
 	s.mu.Unlock()
 	return true
@@ -131,6 +143,7 @@ func (s *ns2InputReportSequencer) setActiveReportID(reportID uint8) bool {
 func (s *ns2InputReportSequencer) resetFeatures() {
 	s.mu.Lock()
 	s.featureFlags = 0
+	s.gameCubeMotion = gameCubeMotionEncoder{}
 	s.mu.Unlock()
 }
 
@@ -143,6 +156,9 @@ func (s *ns2InputReportSequencer) enableFeatures(features uint8) {
 func (s *ns2InputReportSequencer) disableFeatures(features uint8) {
 	s.mu.Lock()
 	s.featureFlags &^= features
+	if features&FeatureIMU != 0 {
+		s.gameCubeMotion = gameCubeMotionEncoder{}
+	}
 	s.mu.Unlock()
 }
 

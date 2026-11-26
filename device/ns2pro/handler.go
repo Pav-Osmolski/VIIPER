@@ -126,7 +126,11 @@ func (h *handler) StreamHandler() api.StreamHandlerFunc {
 		})
 		defer clearOutputCallback()
 
-		buf := make([]byte, InputWireSize)
+		wireSize := InputWireSize
+		if ns2.gameCube {
+			wireSize = GameCubeInputWireSize
+		}
+		buf := make([]byte, wireSize)
 		for {
 			if _, err := io.ReadFull(conn, buf); err != nil {
 				if err == io.EOF {
@@ -138,11 +142,11 @@ func (h *handler) StreamHandler() api.StreamHandlerFunc {
 			receivedAt := time.Now()
 
 			var state InputState
-			if err := state.UnmarshalBinary(buf[:InputWireSize]); err != nil {
+			if err := state.UnmarshalBinary(buf); err != nil {
 				return fmt.Errorf("unmarshal input state: %w", err)
 			}
 			if ns2.gameCube {
-				state.LeftTrigger, state.RightTrigger = buf[12], buf[13]
+				state.LeftTrigger, state.RightTrigger = buf[InputWireSize], buf[InputWireSize+1]
 			}
 			var disposition inputpresentation.FixedReportPublishDisposition
 			producerLease, disposition = ns2.publishInputStateWithLease(

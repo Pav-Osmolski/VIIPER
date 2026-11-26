@@ -2,7 +2,9 @@ package ns2pro
 
 import (
 	"context"
+	"encoding/binary"
 	"io"
+	"math"
 	"testing"
 	"time"
 
@@ -55,6 +57,74 @@ func TestGameCubeDescriptorAndReports(t *testing.T) {
 	input = d.HandleTransfer(ctx, 1, usbip.DirIn, nil)
 	require.NotEmpty(t, input)
 	require.Equal(t, byte(0x05), input[0])
+}
+
+func TestGameCubeMotionFeaturesAndReportSnapshots(t *testing.T) {
+	s := newNS2InputReportSequencer(*defaultMetaState(), time.Now().Add(-20*time.Millisecond))
+	s.nativeReportID = ReportIDGameCube
+	require.True(t, s.setActiveReportID(ReportIDGameCube))
+	state := NewInputState()
+	state.AccelZ, state.GyroX, state.GyroY = 4096, -1640, 820
+	state.LeftTrigger, state.RightTrigger = 42, 223
+	packet := make([]byte, InputReportSize)
+
+	s.buildCurrentInto(state, packet)
+	require.Zero(t, packet[15])
+	s.enableFeatures(FeatureIMU)
+	s.buildCurrentInto(state, packet)
+	require.Equal(t, byte(40), packet[15])
+	require.Equal(t, []byte{42, 223}, packet[13:15])
+	require.Equal(t, uint32(0x0e), binary.LittleEndian.Uint32(packet[16:20])>>24)
+	body := packet[20:56]
+	require.Equal(t, uint32(3), readGameCubeBits(body, 0, 2))
+	require.Equal(t, uint32(0x100000), readGameCubeBits(body, 5, 21))
+	require.Equal(t, uint32(0x100000), readGameCubeBits(body, 26, 21))
+	require.Equal(t, uint32(0x100000), readGameCubeBits(body, 47, 21))
+	require.Equal(t, uint32(16384-1640), readGameCubeBits(body, 188, 14))
+	require.Equal(t, uint32(820), readGameCubeBits(body, 202, 14))
+	require.Equal(t, uint32(4096), readGameCubeBits(body, 258, 14))
+
+	snapshot := make([]byte, InputReportSize)
+	s.buildControlInto(state, ReportIDGameCube, snapshot)
+	require.Equal(t, packet, snapshot)
+	require.True(t, s.setActiveReportID(ReportIDCommon))
+	s.buildCurrentInto(state, packet)
+	require.NotZero(t, binary.LittleEndian.Uint32(packet[43:47]))
+	require.Equal(t, int16(4096), int16(binary.LittleEndian.Uint16(packet[53:55])))
+	require.Equal(t, int16(-1640), int16(binary.LittleEndian.Uint16(packet[55:57])))
+	require.Equal(t, int16(820), int16(binary.LittleEndian.Uint16(packet[57:59])))
+	require.Equal(t, []byte{42, 223}, packet[61:63])
+	s.disableFeatures(FeatureIMU)
+	s.buildCurrentInto(state, packet)
+	require.Equal(t, make([]byte, 18), packet[43:61])
+}
+
+func TestGameCubeNativeMotionUsesSensorTimeAndResetsOnNeutral(t *testing.T) {
+	var encoder gameCubeMotionEncoder
+	state := InputState{AccelX: -16000, AccelZ: 4096, GyroZ: 1640}
+	initial := *encoder.present(state, gameCubeTick*4090)
+	second := *encoder.present(state, gameCubeTick*4102)
+	third := *encoder.present(state, gameCubeTick*4114)
+	require.Equal(t, uint32(6|12<<12|0x0e000000), binary.LittleEndian.Uint32(second[:4]))
+	require.Equal(t, uint32(2), readGameCubeBits(third[4:], 0, 2))
+	require.Equal(t, uint32(16384-4000), readGameCubeBits(third[4:], 230, 14))
+	require.Equal(t, uint32(820), readGameCubeBits(third[4:], 136, 13))
+	require.Equal(t, initial[4:12], second[4:12])
+	// 100 degrees/s for 15 ms produces a 1.5 degree turn about Z.
+	projectedZ := float64(readGameCubeBits(third[4:], 47, 21))/float64(1<<20) - 1
+	require.InDelta(t, math.Tan(0.75*math.Pi/180), projectedZ, 1.0/(1<<20))
+	require.Nil(t, encoder.present(InputState{}, gameCubeTick*4115))
+	reconnected := encoder.present(state, gameCubeTick*4116)
+	require.Equal(t, uint32(0x100000), readGameCubeBits(reconnected[4:], 47, 21))
+}
+
+func readGameCubeBits(body []byte, offset, width int) uint32 {
+	var value uint32
+	for i := 0; i < width; i++ {
+		bit := offset + i
+		value |= uint32(body[bit/8]>>(bit%8)&1) << i
+	}
+	return value
 }
 
 func TestGameCubeRumbleDutyAndStop(t *testing.T) {
@@ -112,12 +182,29 @@ func TestGameCubeClientStreamAndUSBIPRoundTrip(t *testing.T) {
 	state.LeftTrigger, state.RightTrigger = 97, 232
 	wire, err := state.MarshalBinary()
 	require.NoError(t, err)
-	wire[12], wire[13] = state.LeftTrigger, state.RightTrigger
+	wire = append(wire, state.LeftTrigger, state.RightTrigger)
 	_, err = stream.Write(wire)
 	require.NoError(t, err)
 	expected := make([]byte, InputReportSize)
-	state.buildGameCubeReportInto(expected, 0, FeatureButtons|FeatureSticks, *defaultMetaState())
-	require.Len(t, pollInputIgnoringCounter(t, usbClient, imported.Conn, expected, viiperTesting.IntegrationTimeout), InputReportSize)
+	state.buildGameCubeReportInto(expected, 0, FeatureButtons|FeatureSticks, *defaultMetaState(), nil)
+	actual := pollInputIgnoringCounter(t, usbClient, imported.Conn, expected, viiperTesting.IntegrationTimeout)
+	require.Len(t, actual, InputReportSize)
+	require.Equal(t, expected[2:], actual[2:])
+
+	require.NoError(t, usbClient.Submit(imported.Conn, usbip.DirOut, 2,
+		featureCommand(subFeatureEnable, FeatureButtons|FeatureSticks|FeatureIMU), nil))
+	state.AccelZ, state.GyroX = 4096, -1640
+	wire, err = state.MarshalBinary()
+	require.NoError(t, err)
+	_, err = stream.Write(append(wire, state.LeftTrigger, state.RightTrigger))
+	require.NoError(t, err)
+	require.Eventually(t, func() bool {
+		report, readErr := usbClient.ReadInputReport(imported.Conn)
+		return readErr == nil && len(report) == InputReportSize && report[15] == 40 &&
+			readGameCubeBits(report[20:56], 188, 14) == 16384-1640 &&
+			readGameCubeBits(report[20:56], 258, 14) == 4096 &&
+			report[13] == 97 && report[14] == 232
+	}, viiperTesting.IntegrationTimeout, time.Millisecond)
 
 	require.NoError(t, usbClient.Submit(imported.Conn, usbip.DirOut, 1,
 		[]byte{ReportIDGameCubeRumble, 0x51, 1}, nil))

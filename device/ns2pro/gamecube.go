@@ -4,6 +4,7 @@ import "github.com/Alia5/VIIPER/usb"
 
 const (
 	GameCubePID              = 0x2073
+	GameCubeInputWireSize    = InputWireSize + 2
 	ReportIDGameCube         = 0x0A
 	ReportIDGameCubeRumble   = 0x03
 	OutputFlagGameCubeRumble = 0x04
@@ -54,14 +55,15 @@ func (s *ns2InputReportSequencer) buildCommonInto(state *InputState, dst []byte,
 	if s.nativeReportID != ReportIDGameCube {
 		return state.buildCommonReportInto(dst, s.reportCounter32, motionTimestamp, features, meta)
 	}
-	size := state.buildCommonReportInto(dst, s.reportCounter32, 0, features&^FeatureIMU, meta)
+	size := state.buildCommonReportInto(dst, s.reportCounter32, motionTimestamp, features, meta)
 	clear(dst[5:9])
 	encodeButtonMap(state.Buttons, gameCubeCommonButtons, dst[5:9])
 	dst[61], dst[62] = state.LeftTrigger, state.RightTrigger
 	return size
 }
 
-func (s InputState) buildGameCubeReportInto(dst []byte, counter, features uint8, meta MetaState) int {
+func (s InputState) buildGameCubeReportInto(dst []byte, counter, features uint8,
+	meta MetaState, motion *[gameCubeMotionSize]byte) int {
 	b := dst[:InputReportSize]
 	clear(b)
 	b[0], b[1], b[2] = ReportIDGameCube, counter, powerInfo(meta)
@@ -73,6 +75,10 @@ func (s InputState) buildGameCubeReportInto(dst []byte, counter, features uint8,
 		b[12] |= 0x08
 	}
 	b[13], b[14] = s.LeftTrigger, s.RightTrigger
+	if motion != nil {
+		b[15] = gameCubeMotionSize
+		copy(b[16:], motion[:])
+	}
 	return len(b)
 }
 
