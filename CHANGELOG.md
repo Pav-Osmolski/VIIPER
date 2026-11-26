@@ -6,7 +6,7 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
-- No unreleased changes.
+- Add the input-only VIIPER Generic Joystick at registered USB ID [1209:D10C](https://pid.codes/1209/D10C/). It exposes six axes, sixteen buttons, and one POV hat to DirectInput and WinMM games. Historical lab requests retain their separate identities.
 
 ## [0.1.18](https://github.com/Pav-Osmolski/VIIPER/tree/v0.1.18) - 2026-11-20
 

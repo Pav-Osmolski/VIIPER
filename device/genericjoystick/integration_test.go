@@ -33,11 +33,11 @@ func TestLocalhostManagementAndUSBIPReports(t *testing.T) {
 	defer bus.Close()
 	s.UsbServer.AddBus(bus)
 	client := viiperclient.New(s.ApiServer.Addr())
-	created, err := client.DeviceAddCtx(context.Background(), bus.BusID(), "genericjoystick", &device.CreateOptions{DeviceSpecific: `{"version":1,"experimental":true,"registered":true,"buttonCount":16}`})
+	created, err := client.DeviceAddCtx(context.Background(), bus.BusID(), "genericjoystick", &device.CreateOptions{DeviceSpecific: `{"version":1,"registered":true,"buttonCount":16}`})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if created.Type != "genericjoystick" || created.DeviceSpecific["version"] != float64(1) ||
+	if created.Type != "genericjoystick" || created.DeviceSpecific["version"] != float64(1) || created.DeviceSpecific["experimental"] != false ||
 		created.DeviceSpecific["vendorId"] != float64(0x1209) || created.DeviceSpecific["productId"] != float64(0xD10C) {
 		t.Fatalf("wrong management receipt %+v", created)
 	}

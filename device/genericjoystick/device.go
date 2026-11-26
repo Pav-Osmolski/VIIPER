@@ -36,6 +36,7 @@ type Joystick struct {
 	pendingAt          time.Time
 	version            uint64
 	buttonCount        int
+	experimental       bool
 	importClosed       bool
 	configured         bool
 	instanceID         string
@@ -44,7 +45,7 @@ type Joystick struct {
 
 func New(o *device.CreateOptions) (*Joystick, error) {
 	if o == nil {
-		return nil, fmt.Errorf("genericjoystick requires explicit experimental version 1 options")
+		return nil, fmt.Errorf("genericjoystick requires explicit version 1 options")
 	}
 	var args CreateOptions
 	decoder := json.NewDecoder(strings.NewReader(o.DeviceSpecific))
@@ -55,8 +56,8 @@ func New(o *device.CreateOptions) (*Joystick, error) {
 	if err := decoder.Decode(new(any)); err != io.EOF {
 		return nil, fmt.Errorf("genericjoystick options must contain exactly one JSON object")
 	}
-	if args.Version != ContractVersion || !args.Experimental {
-		return nil, fmt.Errorf("genericjoystick requires experimental=true and version=1")
+	if args.Version != ContractVersion || (!args.Registered && !args.Experimental) {
+		return nil, fmt.Errorf("genericjoystick requires version=1 and either registered=true or experimental=true")
 	}
 	if args.ButtonCount != 12 && args.ButtonCount != 16 {
 		return nil, fmt.Errorf("buttonCount must be 12 or 16")
@@ -65,7 +66,7 @@ func New(o *device.CreateOptions) (*Joystick, error) {
 		return nil, fmt.Errorf("registered joystick identity requires exactly 16 buttons")
 	}
 	if o.IDVendor != nil || o.IDProduct != nil {
-		return nil, fmt.Errorf("experimental joystick identity cannot be overridden")
+		return nil, fmt.Errorf("generic joystick identity cannot be overridden")
 	}
 	instanceID := strings.ToUpper(args.InstanceID)
 	if instanceID == "" {
@@ -97,7 +98,7 @@ func New(o *device.CreateOptions) (*Joystick, error) {
 		return nil, err
 	}
 	return &Joystick{input: input, neutral: neutral, presented: neutral, version: 1,
-		buttonCount: args.ButtonCount, instanceID: instanceID, descriptor: makeDescriptor(args.ButtonCount, instanceID, args.Registered)}, nil
+		buttonCount: args.ButtonCount, experimental: args.Experimental, instanceID: instanceID, descriptor: makeDescriptor(args.ButtonCount, instanceID, args.Registered)}, nil
 }
 
 func (j *Joystick) GetDescriptor() *usb.Descriptor { return &j.descriptor }
@@ -106,7 +107,7 @@ func (j *Joystick) GetDeviceSpecificArgs() map[string]any {
 	j.mu.Lock()
 	defer j.mu.Unlock()
 	configured := j.configured && !j.importClosed
-	return map[string]any{"version": ContractVersion, "experimental": true, "buttonCount": j.buttonCount,
+	return map[string]any{"version": ContractVersion, "experimental": j.experimental, "buttonCount": j.buttonCount,
 		"contract": "genericjoystick-v1", "inputConfigured": configured, "instanceId": j.instanceID,
 		"vendorId": j.descriptor.Device.IDVendor, "productId": j.descriptor.Device.IDProduct,
 		"neutralAxes": []int16{j.neutral.X, j.neutral.Y, j.neutral.Z, j.neutral.Rx, j.neutral.Ry, j.neutral.Rz}}

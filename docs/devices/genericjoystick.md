@@ -1,19 +1,19 @@
-# Experimental generic joystick v1
+# Generic joystick v1
 
-This feature branch contains an **input-only laboratory prototype**, not a
-released DS4Windows output. Its matching frontend branch is
+This input-only device uses the standard DS4Windows startup path with the
+matching VIIPER backend. Its frontend branch is
 `Pav-Osmolski/DS4Windows:feature/directinput-output`.
 
-## Registered preview identity (2026-11-25)
+## Registered identity
 
 The matched DS4Windows feature now requests a fixed sixteen-button joystick,
 six axes and one POV hat. Its profile button assignments do not change the HID
 shape. Inputs absent on a physical controller remain inactive or can be remapped.
-The matched preview uses [1209:D10C](https://pid.codes/1209/D10C/), approved in
+The registered device uses [1209:D10C](https://pid.codes/1209/D10C/), approved in
 [pid.codes PR #1317](https://github.com/pidcodes/pidcodes.github.com/pull/1317).
 The HID report descriptor is identical to the sixteen-button lab descriptor.
 Historical lab fixtures retain `FFFF:D10C` and `FFFF:D110`. Native Windows and
-game acceptance with the registered identity remain open.
+game acceptance depends on the Windows and game configuration.
 
 ## Purpose and reference behaviour
 
@@ -42,7 +42,6 @@ Management type: `genericjoystick`. Creation requires:
   "type": "genericjoystick",
   "deviceSpecific": {
     "version": 1,
-    "experimental": true,
     "registered": true,
     "buttonCount": 16,
     "neutralAxes": [0, 0, 0, 0, 0, 0]
@@ -50,8 +49,8 @@ Management type: `genericjoystick`. Creation requires:
 }
 ```
 
-`registered: true` requires exactly 16 buttons. Omit it for a 12- or 16-button
-lab fixture. `neutralAxes` is optional and defaults
+`registered: true` requires exactly 16 buttons. A 12- or 16-button lab fixture
+requests `experimental: true` without `registered`. `neutralAxes` is optional and defaults
 to six centred axes. A feeder using full-range pedals must supply the actual
 released-axis values at creation so startup, recovery and disconnect all use
 the same baseline. Unknown options, unsupported versions and identity
@@ -63,7 +62,7 @@ and one interrupt-IN endpoint. It declares no force-feedback or audio
 interfaces. It is not an XInput controller.
 
 The selected descriptor supplies the `vendorId` and `productId` in the device
-metadata. The preview requires the registered pair **1209:D10C** before it opens
+metadata. DS4Windows requires the registered pair **1209:D10C** before it opens
 the input stream. The lab pairs **FFFF:D10C** (12 buttons) and **FFFF:D110**
 (16 buttons) remain distinct to preserve historical fixture behavior and Windows
 enumeration history.
