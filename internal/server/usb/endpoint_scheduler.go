@@ -1706,8 +1706,13 @@ func (s *endpointSchedulers) retirePresentationGeneration(
 	if s.presentationSource == nil || s.presentationGeneration == 0 {
 		return
 	}
-	if !s.presentationSource.RetireInputPresentationGeneration(
-		s.presentationGeneration, retiredAt) {
+	var retired bool
+	if source, ok := s.presentationSource.(inputpresentation.ImportLifecycleSource); ok {
+		retired = source.RetireInputPresentationGenerationForImport(s.presentationGeneration, retiredAt, adoptSuccessor)
+	} else {
+		retired = s.presentationSource.RetireInputPresentationGeneration(s.presentationGeneration, retiredAt)
+	}
+	if !retired {
 		return
 	}
 	if adoptSuccessor {

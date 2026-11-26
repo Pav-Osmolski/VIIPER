@@ -2615,6 +2615,9 @@ func (s *Server) processSubmitWithLifecycle(
 			case controlLifecycleSetConfiguration:
 				s.setDeviceConfiguration(dev,
 					lifecycle.configurationValue)
+				if observer, ok := dev.(usb.ConfigurationObserver); ok {
+					observer.USBConfigurationChanged(lifecycle.configurationValue)
+				}
 				s.resetInterfaceAlts(dev)
 			}
 		}

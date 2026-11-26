@@ -2,6 +2,7 @@ package device_test
 
 import (
 	"context"
+	"github.com/Alia5/VIIPER/device"
 	"sort"
 	"strings"
 	"testing"
@@ -83,7 +84,11 @@ func TestDeviceAttach(t *testing.T) {
 
 			c := viiperclient.New(s.ApiServer.Addr())
 
-			stream, addResp, err := c.AddDeviceAndConnect(context.Background(), b.BusID(), tc.deviceType, nil)
+			var options *device.CreateOptions
+			if tc.deviceType == "genericjoystick" {
+				options = &device.CreateOptions{DeviceSpecific: `{"version":1,"experimental":true,"buttonCount":12}`}
+			}
+			stream, addResp, err := c.AddDeviceAndConnect(context.Background(), b.BusID(), tc.deviceType, options)
 			if !assert.NoError(t, err) {
 				t.Fatal()
 			}

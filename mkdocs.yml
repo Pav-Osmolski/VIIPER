@@ -83,6 +83,7 @@ nav:
   - DualShock 4 Controller: devices/dualshock4.md
   - DualSense Controller: devices/dualsense.md
   - Switch 2 Pro Controller: devices/ns2pro.md
+  - Generic Joystick: devices/genericjoystick.md
   - Keyboard: devices/keyboard.md
   - Mouse: devices/mouse.md
 - Development:
