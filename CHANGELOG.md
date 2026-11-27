@@ -6,7 +6,12 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
-- Add the virtual Nintendo GameCube Controller for Switch 2 over USB/IP, with native and common input reports, independent analog trigger travel and clicks, and single-motor rumble. Protocol references include [SDL](https://github.com/libsdl-org/SDL/blob/main/src/joystick/hidapi/SDL_hidapi_switch2.c) and [ndeadly's Switch 2 research](https://github.com/ndeadly/switch2_controller_research).
+## [0.1.20](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.20) - 2026-11-27
+
+### Nintendo’s wireless GameCube Controller for Switch 2
+
+- Add GameCube Controller emulation over USB/IP as the backend for [DS4Windows 5.0.85](https://github.com/Pav-Osmolski/DS4Windows/releases/tag/5.0.85). It carries both sticks, independent analog L/R travel and digital clicks, single-motor rumble, and gyroscope and accelerometer samples from a motion-capable source when the host enables the virtual IMU.
+- Synthetic tests exercise native and common reports, motion and rumble. Thanks to [@Julinkk](https://github.com/Julinkk) for requesting support in [DS4Windows #154](https://github.com/Pav-Osmolski/DS4Windows/issues/154) and sharing the pairing reference, and to the [SDL](https://github.com/libsdl-org/SDL/blob/main/src/joystick/hidapi/SDL_hidapi_switch2.c) and [Switch 2 protocol research](https://github.com/ndeadly/switch2_controller_research) contributors.
 
 ## [0.1.19](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.19) - 2026-11-26
 
