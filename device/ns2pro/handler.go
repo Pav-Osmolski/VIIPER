@@ -17,9 +17,12 @@ import (
 
 func init() {
 	api.RegisterDevice("ns2pro", &handler{})
+	api.RegisterDevice("ns2gamecube", &handler{gameCube: true})
 }
 
-type handler struct{}
+type handler struct {
+	gameCube bool
+}
 
 var (
 	serialsMu sync.Mutex
@@ -66,7 +69,7 @@ func (h *handler) CreateDevice(o *device.CreateOptions) (usb.Device, error) {
 	}
 	o.DeviceSpecific = string(b)
 
-	result, err := New(o)
+	result, err := newDevice(o, h.gameCube)
 	if err != nil {
 		serialsMu.Lock()
 		delete(serials, serial)
@@ -123,7 +126,11 @@ func (h *handler) StreamHandler() api.StreamHandlerFunc {
 		})
 		defer clearOutputCallback()
 
-		buf := make([]byte, InputWireSize)
+		wireSize := InputWireSize
+		if ns2.gameCube {
+			wireSize = GameCubeInputWireSize
+		}
+		buf := make([]byte, wireSize)
 		for {
 			if _, err := io.ReadFull(conn, buf); err != nil {
 				if err == io.EOF {
@@ -137,6 +144,9 @@ func (h *handler) StreamHandler() api.StreamHandlerFunc {
 			var state InputState
 			if err := state.UnmarshalBinary(buf); err != nil {
 				return fmt.Errorf("unmarshal input state: %w", err)
+			}
+			if ns2.gameCube {
+				state.LeftTrigger, state.RightTrigger = buf[InputWireSize], buf[InputWireSize+1]
 			}
 			var disposition inputpresentation.FixedReportPublishDisposition
 			producerLease, disposition = ns2.publishInputStateWithLease(

@@ -65,15 +65,12 @@ func (d *NS2Pro) handleUSBCommand(seq, sub uint8, out []byte) {
 		}
 		d.enqueueResponse(append(commandHeader(cmdUSB, seq, sub), 0x01, 0x00, 0x00, 0x00))
 	case subUSBSelectReport:
-		if len(out) >= 9 {
-			switch out[8] {
-			case ReportIDCommon, ReportIDPro:
-				reportID := out[8]
-				d.updateInputEncodingConfiguration(func() {
-					d.inputReports.setActiveReportID(reportID)
-				})
-				d.signalInput()
-			}
+		if len(out) >= 9 && out[8] != 0 && d.SupportsInputReportSnapshot(out[8]) {
+			reportID := out[8]
+			d.updateInputEncodingConfiguration(func() {
+				d.inputReports.setActiveReportID(reportID)
+			})
+			d.signalInput()
 		}
 		d.enqueueResponse(commandHeader(cmdUSB, seq, sub))
 	case subUSBStartReports:

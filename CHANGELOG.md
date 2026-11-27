@@ -6,6 +6,13 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
+## [0.1.20](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.20) - 2026-11-27
+
+### Nintendo’s wireless GameCube Controller for Switch 2
+
+- Add GameCube Controller emulation over USB/IP as the backend for [DS4Windows 5.0.85](https://github.com/Pav-Osmolski/DS4Windows/releases/tag/5.0.85). It carries both sticks, independent analog L/R travel and digital clicks, single-motor rumble, and gyroscope and accelerometer samples from a motion-capable source when the host enables the virtual IMU.
+- Synthetic tests exercise native and common reports, motion and rumble. Thanks to [@Julinkk](https://github.com/Julinkk) for requesting support in [DS4Windows #154](https://github.com/Pav-Osmolski/DS4Windows/issues/154) and sharing the pairing reference, and to the [SDL](https://github.com/libsdl-org/SDL/blob/main/src/joystick/hidapi/SDL_hidapi_switch2.c) and [Switch 2 protocol research](https://github.com/ndeadly/switch2_controller_research) contributors.
+
 ## [0.1.19](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.19) - 2026-11-26
 
 - **Generic Joystick is ready for normal DS4Windows use.** After the wait for approval, [pid.codes assigned USB ID 1209:D10C](https://github.com/pidcodes/pidcodes.github.com/pull/1317) to the input-only virtual joystick. It exposes six axes, sixteen buttons and one eight-direction POV hat for DirectInput and WinMM. Historical lab devices retain their own identities. [VIIPER PR #4](https://github.com/Pav-Osmolski/VIIPER/pull/4)
