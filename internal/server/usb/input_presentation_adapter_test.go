@@ -447,18 +447,21 @@ func TestInterruptPresentationRejectedAdmissionDefersWithoutWriting(
 	}()
 
 	require.True(t, worker.enqueue(707, 64, nil, nil, time.Now()))
-	select {
-	case resolution := <-device.resolution:
-		require.Equal(t, inputpresentation.OutcomeDefer, resolution.outcome)
-		require.True(t, resolution.claim.Valid())
-	case <-time.After(time.Second):
-		t.Fatal("admission-rejected claim was not terminally deferred")
+	// Wait for the initial defer and retry before unlinking the pending request.
+	// Unlinking after only the first defer can win the race against the retry.
+	deadline := time.After(time.Second)
+	for range 2 {
+		select {
+		case resolution := <-device.resolution:
+			require.Equal(t, inputpresentation.OutcomeDefer, resolution.outcome)
+			require.True(t, resolution.claim.Valid())
+		case <-deadline:
+			t.Fatal("the retained request did not defer and retry before the deadline")
+		}
 	}
 	// No RET_SUBMIT was emitted, so the host request must remain unlinkable
 	// rather than disappearing from the endpoint queue.
 	require.True(t, worker.unlink(707))
-	require.GreaterOrEqual(t, device.admissions.Load(), uint64(2),
-		"the retained request did not make its bounded immediate retry")
 	recorder.mu.Lock()
 	require.Empty(t, recorder.writes,
 		"source-rejected claim bytes reached the response stream")
