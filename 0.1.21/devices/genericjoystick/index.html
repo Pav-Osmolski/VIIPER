@@ -1,0 +1,2244 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Virtual Input over IP EmulatoR - Documentation">
+      
+      
+        <meta name="author" content="Peter Repukat">
+      
+      
+      
+        <link rel="prev" href="../ns2pro/">
+      
+      
+        <link rel="next" href="../keyboard/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Generic Joystick - VIIPER Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#generic-joystick-v1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="VIIPER Documentation" class="md-header__button md-logo" aria-label="VIIPER Documentation" data-md-component="logo">
+      
+  <img src="../../viiper.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            VIIPER Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Generic Joystick
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Pav-Osmolski/VIIPER" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Pav-Osmolski/VIIPER
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cli/overview/" class="md-tabs__link">
+          
+  
+  
+  CLI Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/overview/" class="md-tabs__link">
+          
+  
+  
+  API & Clients
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../libviiper/overview/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  libVIIPER
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../overview/" class="md-tabs__link">
+          
+  
+  
+  Devices
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../development/" class="md-tabs__link">
+          
+  
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Technical Records
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../misc/support/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Community & Support
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="https://github.com/Pav-Osmolski/VIIPER/blob/main/CHANGELOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Release History
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="VIIPER Documentation" class="md-nav__button md-logo" aria-label="VIIPER Documentation" data-md-component="logo">
+      
+  <img src="../../viiper.svg" alt="logo">
+
+    </a>
+    VIIPER Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Pav-Osmolski/VIIPER" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Pav-Osmolski/VIIPER
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/usbip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    USB/IP Prerequisites
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../startup-diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Startup Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    CLI Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server Command
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxy Command
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/codegen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Clients
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API & Clients
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../clients/go/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Go Client
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../clients/cpp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++ Client Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../clients/csharp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C# Client Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../clients/rust/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust Client Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../clients/typescript/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TypeScript Client Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../clients/generator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generator Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../libviiper/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    libVIIPER
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Devices
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Devices
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xbox360/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xbox 360 Controller
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dualshock4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DualShock 4 Controller
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dualsense/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DualSense Controller
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ns2pro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Switch 2 Pro Controller
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generic Joystick
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generic Joystick
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#usb-identity-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        USB identity compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#purpose-and-reference-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purpose and reference behaviour
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#device-and-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device and contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation tools
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#historical-windows-lab-and-current-synthetic-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Historical Windows lab and current synthetic checks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#historical-ds4windows-physical-controller-preview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Historical DS4Windows physical-controller preview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Historical DS4Windows physical-controller preview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#owner-run-results-2026-10-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Owner-run results, 2026-10-15
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-identity-preparation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production identity preparation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-stable-instance-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional stable instance identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../keyboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Keyboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mouse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mouse
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mkdocs-readme/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical Records
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community & Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/Pav-Osmolski/VIIPER/blob/main/CHANGELOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release History
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#usb-identity-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        USB identity compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#purpose-and-reference-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purpose and reference behaviour
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#device-and-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device and contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation tools
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#historical-windows-lab-and-current-synthetic-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Historical Windows lab and current synthetic checks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#historical-ds4windows-physical-controller-preview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Historical DS4Windows physical-controller preview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Historical DS4Windows physical-controller preview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#owner-run-results-2026-10-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Owner-run results, 2026-10-15
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-identity-preparation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production identity preparation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-stable-instance-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional stable instance identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="generic-joystick-v1">Generic Joystick v1</h1>
+<p>This input-only device is available from VIIPER 0.1.19 and DS4Windows 5.0.84.
+DS4Windows uses its normal startup and bundles the matching backend in the
+standard installer and portable ZIP.</p>
+<h2 id="usb-identity-compatibility">USB identity compatibility</h2>
+<p>pid.codes assigned PID <code>D10C</code> under its shared VID <code>1209</code> to Pav-Osmolski for
+the <strong>VIIPER Generic Joystick</strong>. This input-only virtual USB HID device exposes
+six absolute axes, sixteen buttons and one eight-direction POV hat with a
+neutral position. <a href="https://pid.codes/1209/D10C/">Registry entry</a> ·
+<a href="https://github.com/pidcodes/pidcodes.github.com/pull/1317">Allocation request</a></p>
+<p><code>1209:D10C</code> identifies this implementation and compatible revisions. Preserve
+the host-visible USB and HID contract when reusing the identity, including
+interfaces, endpoints, report IDs, axis and button usages, value ranges and
+manufacturer and product strings, and the per-instance serial scheme.
+Per-profile mappings, axis roles and trigger resting positions can change
+while keeping the advertised device contract intact.</p>
+<p>Independently distributed derivatives that materially change the USB
+descriptor, interfaces, report layout or device identity should obtain their
+own VID:PID allocation. VIIPER will use a separate allocation for incompatible
+device revisions. This guidance applies to USB identity compatibility.
+The VIIPER implementation remains available under GPL-3.0-or-later, with
+the rights to use, modify and redistribute the code under that licence.
+<a href="https://github.com/Pav-Osmolski/VIIPER/blob/main/LICENSE.txt">VIIPER licence</a></p>
+<p>Historical lab fixtures use <code>FFFF:D10C</code> and <code>FFFF:D110</code>. The registered version
+retains the sixteen-button lab HID report descriptor. Windows or a game may
+require new bindings after moving from a lab identity to the registered one.</p>
+<h2 id="purpose-and-reference-behaviour">Purpose and reference behaviour</h2>
+<p>Older Windows games can read different axis roles and resting positions from
+modern gamepads. In particular, eVenent's PadForge configuration used three
+virtual sticks (six axes), no dedicated triggers, and 12 buttons. PadForge's
+reported fix put the second stick on Z/Rz rather than Rx/Ry:</p>
+<ul>
+<li><a href="https://github.com/hifihedgehog/PadForge/discussions/122">Original report</a></li>
+<li><a href="https://github.com/hifihedgehog/PadForge/issues/123">Reported root cause and fix</a></li>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/xinput/xinput-and-directinput">Microsoft's trigger-centre explanation</a></li>
+<li><a href="https://github.com/Croteam-official/Serious-Engine/blob/master/Sources/Engine/Base/Input.cpp">Serious Engine's WinMM input implementation</a></li>
+</ul>
+<p>These are reference behaviours, <strong>not verified compatibility claims for those
+games</strong>. The native Windows synthetic-input lab passed on 2026-10-14. A USB
+DualSense physical preview and two games were subsequently tested; see the
+dated results below. The games named in the original feature request remain
+unverified.</p>
+<h2 id="device-and-contract">Device and contract</h2>
+<p>Management type: <code>genericjoystick</code>. Create the registered device with:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"genericjoystick"</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">"deviceSpecific"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">"registered"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">"buttonCount"</span><span class="p">:</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">"neutralAxes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
+</code></pre></div>
+<p><code>registered: true</code> requires exactly 16 buttons. A 12- or 16-button lab fixture
+requests <code>experimental: true</code> without <code>registered</code>. <code>neutralAxes</code> is optional and defaults
+to six centred axes. A feeder using full-range pedals must supply the actual
+released-axis values at creation so startup, recovery and disconnect all use
+the same baseline. Unknown options, unsupported versions and identity
+overrides are rejected.</p>
+<p>The descriptor has one Joystick application collection, six named absolute
+axes (X, Y, Z, Rx, Ry, Rz), one eight-direction POV hat with a null position,
+and one interrupt-IN endpoint. It declares no force-feedback or audio
+interfaces. It is not an XInput controller.</p>
+<p>The selected descriptor supplies the <code>vendorId</code> and <code>productId</code> in the device
+metadata. DS4Windows requires the registered pair <strong>1209:D10C</strong> before it opens
+the input stream. The lab pairs <strong>FFFF:D10C</strong> (12 buttons) and <strong>FFFF:D110</strong>
+(16 buttons) remain distinct to preserve historical fixture behavior and Windows
+enumeration history.</p>
+<p>Both stream frame and HID report are 16 bytes, but their axis value spaces
+are intentionally different:</p>
+<table>
+<thead>
+<tr>
+<th>Byte offset</th>
+<th>Stream</th>
+<th>HID report</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Version 1</td>
+<td>Report ID 1</td>
+</tr>
+<tr>
+<td>1, 3, 5, 7, 9, 11</td>
+<td>Six little-endian signed 16-bit axes, -32767..32767</td>
+<td>Same named axes, unsigned 0..65534</td>
+</tr>
+<tr>
+<td>13..14</td>
+<td>Little-endian button mask</td>
+<td>Same mask; upper four bits are constant padding in the 12-button descriptor</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Hat 0..7 clockwise from north; 8 neutral</td>
+<td>Same hat in low nibble; constant upper nibble</td>
+</tr>
+</tbody>
+</table>
+<p>Wire zero is exactly HID 32767. Wire -32768, invalid hats, incorrect lengths,
+unsupported versions and out-of-layout buttons are rejected before publication.
+Named axis roles are stable regardless of frontend layout preset. Report ID 1
+GET_REPORT uses a versioned snapshot of committed input; it does not consume
+the interrupt journal.</p>
+<p>The existing fixed-report scheduler coalesces continuous axis motion while
+preserving button/hat boundaries. It enforces a 50 ms maximum ordered age,
+neutralizes faulty history and rejects stale producer leases. Stream loss
+retires the producer and schedules configured neutral. Endpoint retirement
+starts a neutral generation rather than replaying an old press. A game must
+accept standard joystick input through DirectInput or WinMM.</p>
+<h2 id="validation-tools">Validation tools</h2>
+<p><code>go run ./examples/genericjoystick</code> prints a labelled sequence of wire frames
+by default. <strong>Dry-run opens no connections and creates no device.</strong></p>
+<p><code>--api=127.0.0.1:&lt;lab-api-port&gt;</code> explicitly connects to an isolated lab backend,
+allocates its own bus/device, feeds each diagnostic step, and removes its bus
+on exit. <code>--hold=2s</code> controls the duration of each step. Never point it at a
+DS4Windows-managed server. The feeder does not install a driver or perform
+native attach; a server configured for automatic native attach may do so.</p>
+<p>A native Windows lab check requires the matching lab backend, an already verified
+matching USB/IP driver, a separately configured local lab server and explicit
+native attachment. Do not substitute this binary into the released app's
+managed backend folder or bypass package hashes. No installer or driver
+upgrade is necessary just to run the automated socket tests.</p>
+<p>The corresponding DS4Windows branch provides a read-only native consumer:
+<code>utils/GenericJoystickProbe</code>. Build/run its x86 and x64 executables to compare
+DirectInput's DIJOYSTATE and WinMM's JOYINFOEX. Check all axis endpoints,
+neutral, buttons, hat diagonals and disconnect. Keep driver/attach ownership
+with the lab process; the probe only reads.</p>
+<h2 id="historical-windows-lab-and-current-synthetic-checks">Historical Windows lab and current synthetic checks</h2>
+<p>The DS4Windows feature branch now supplies an isolated Windows lab launcher in
+<code>utils/GenericJoystickLab</code>. Its interactive feeder is this repository's
+<code>examples/genericjoystick-lab</code>: authenticated literal-loopback API, explicit
+absolute key/options files, allocation and attachment receipts, bounded
+management requests, validated versioned frames, producer disconnect/reconnect,
+and bus cleanup on exit. It cannot install drivers or detach native imports;
+the launcher owns that operation using the private server/bus/device identity.</p>
+<p>The packaged lab checks both stick layouts and all four trigger modes against
+the actual DS4Windows mapping policy, using x86/x64 DirectInput and WinMM.
+It preserves released app files and excludes the API password from reports.
+The launcher has simulated success, timeout, failed-stream and foreign-import
+tests. Revision 4's native Windows report passed all 156 observations across
+eight layout/trigger plans, x86/x64 DirectInput and WinMM, configured neutral,
+producer disconnect and reconnect. Temporary imports were removed without
+cleanup errors. Simulated socket tests alone are not evidence of enumeration;
+this result comes from the user-run USB/IP 0.9.8.1 native attachment lab on
+Windows 10.0.26300.0. It validates the twelve-button synthetic configuration on
+one machine, not physical-controller integration, sixteen-button enumeration,
+force feedback or game compatibility.</p>
+<p>Report: <code>20261014-233817-ea0f280a-report.zip</code>. Tested VIIPER revision:
+<code>01801558b9c52616afaf145290067c57ad2cbeb3</code>; matching DS4Windows revision:
+<code>4e158868809eaa3c60ddb014bb2a4fc3da2e1ea1</code>. Detailed results are recorded in the
+frontend branch's <code>docs/directinput-development.md</code>.</p>
+<p>On 2026-11-26, two registered 1209:D10C devices passed localhost management
+and USB/IP tests. Each kept distinct input while the other device was removed,
+and the recreated device kept its USB serial. These sockets use a userspace
+USB/IP client. DirectInput GUID retention, game bindings and installed HidHide
+remain native checks in the paired
+<a href="https://github.com/Pav-Osmolski/DS4Windows/blob/feature/directinput-output/docs/directinput-release-checklist.md">DS4Windows release checklist</a>. NFS Underground 2, Jedi Outcast/Academy and
+Serious Sam TFE/TSE still need tests recording edition, patches, bindings and
+controller configuration. Force feedback and arbitrary descriptor customization
+are separate future work.</p>
+<h2 id="historical-ds4windows-physical-controller-preview">Historical DS4Windows physical-controller preview</h2>
+<p>The earlier DS4Windows preview exposed this output in a hash-pinned portable
+lab context. It sends the requested six resting axes during
+creation and waits for the versioned <code>genericjoystick-v1</code> capability response and
+<code>inputConfigured: true</code> before opening the producer. The backend reports readiness
+only after an accepted USB SET_CONFIGURATION(1). Configuration zero and exact
+native import closure clear readiness; stale import generations cannot clear a
+successor's state. Resetting an endpoint alone does not establish configuration.</p>
+<p>The physical preview uses twelve buttons and the validated wire contract. It
+adds no feedback, audio or production identity allocation. See DS4Windows's
+<code>utils/GenericJoystickPreview/README.txt</code> for the isolated launcher and test plan.</p>
+<h3 id="owner-run-results-2026-10-15">Owner-run results, 2026-10-15</h3>
+<p>The owner confirmed all eight layout/trigger combinations with a USB DualSense,
+saved settings, inversions/button thresholds, unplug/reconnect and Stop/Start.
+The r2 preview paired VIIPER <code>bd8f6e21215b471015ca442945c2c7fc90f1cab4</code>
+with DS4Windows <code>6c2760c100f04e515ec7458c0b7db565ff26c8e9</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Game</th>
+<th>DS4Windows configuration</th>
+<th>User result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BeamNG.drive 0.39.4.0.20972</td>
+<td>Racing + Full range; X steering, Rz throttle, Z brake</td>
+<td>Hardware response, bindings and driving passed.</td>
+</tr>
+<tr>
+<td>FlatOut 2, current Steam installation; exact build unrecorded</td>
+<td>Legacy + Centred; X steering, Ry throttle, Rx brake</td>
+<td>Driving with manual and automatic transmission passed. Stick menu navigation felt awkward at 0% in-game dead zone.</td>
+</tr>
+</tbody>
+</table>
+<p>The physical matrix report <code>20261015-123537-0ff0761f-report.zip</code> recorded fifteen
+attachments/removals and clean cleanup. The play-session report
+<code>20261015-124824-f68ac364-report.zip</code> recorded 3,570 sampled input states,
+three closed sessions, no backend WARN/ERROR events and no remaining imports.
+Gameplay success is the owner's observation; backend logs cannot prove it.
+These results cover one machine and the tested game installations, not all
+versions or original unpatched releases. Steam Input/HidHide state was not
+independently captured. The preview deliberately bypasses automatic HidHide.</p>
+<h3 id="production-identity-preparation">Production identity preparation</h3>
+<p>See <a href="../../genericjoystick-release-preparation/">release preparation</a> for the
+coordinated backend provenance, packaging and compatibility requirements.</p>
+<p>The request was amended to cover the fixed sixteen-button descriptor and
+approved on 2026-11-25. See the
+<a href="#usb-identity-compatibility">USB identity compatibility notice</a>.</p>
+<h3 id="optional-stable-instance-identity">Optional stable instance identity</h3>
+<p>Creation accepts <code>instanceId</code>: exactly 32 hexadecimal digits, normalized to
+uppercase and echoed in device-specific metadata. USB serials are now
+<code>VIIPER-GJ1-&lt;instanceId&gt;</code>. Omitting the field generates a random 128-bit identity,
+so independent default devices do not share a serial. To preserve identity on
+recreation, clients must supply the same ID for the same logical controller and
+different IDs for different controllers. The backend does not globally reserve
+caller-supplied IDs; callers must avoid duplicates. DS4Windows rejects duplicate
+physical identities and verifies the returned ID before opening/reopening input.
+The same instance ID preserves the USB serial on recreation. A new serial can
+require rebinding existing games. Stable serials do not guarantee stable WinMM slot
+numbers or game-specific saved bindings. The completed two-device owner lab (r4 report <code>20261015-165810-0ed8a66d</code>)
+validated input isolation, producer reconnect, recreation and reversed creation
+order in x86/x64 DirectInput and WinMM. It retained two GUID-persistence failures:
+removing A moved B from joystick slot 1 to 0 and changed B's GUID in enumeration
+and GetDeviceInfo. B's serial/path stayed stable; restoring A restored the
+original GUIDs. Cleanup was clean. Stable multi-controller game bindings remain
+unverified.</p>
+<p>The USB/IP 0.9.8.1 serial-override fix
+<a href="https://github.com/vadimgrn/usbip-win2/commit/a2a1159763088c85d940078cfa6491f38540953d">a2a1159</a>
+was not in a published successor release as of 2026-10-15. VIIPER leaves the
+transport override empty and serves its own serial, but later serial-query
+success does not establish correct initial Windows PnP enumeration. Retest the
+same two-device scenario when a packaged fixed driver is available before
+ruling out an effect from its shared request-completion changes.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
