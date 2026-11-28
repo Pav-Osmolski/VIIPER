@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -23,10 +22,8 @@ const (
 )
 
 type DualShock4 struct {
-	inputCh        chan *InputState
-	inputState     *InputState
-	inputPublishMu sync.Mutex
-	metaState      *MetaState
+	input     dualShock4InputQueue
+	metaState *MetaState
 
 	outputFunc               func(OutputState)
 	speakerFunc              func([]byte)
@@ -119,9 +116,8 @@ func New(o *device.CreateOptions) (*DualShock4, error) {
 		"pid", d.descriptor.Device.IDProduct,
 		"interfaces", len(d.descriptor.Interfaces))
 
-	d.inputState = NewInputState()
-	d.inputCh = make(chan *InputState, 1)
-	d.inputCh <- d.inputState
+	d.input.ready = make(chan struct{}, 1)
+	d.input.reset()
 	d.timestampBase = time.Now()
 
 	return d, nil
@@ -241,23 +237,10 @@ func (d *DualShock4) SetSpeakerResetCallback(f func()) {
 }
 
 func (d *DualShock4) UpdateInputState(state *InputState) {
-	d.inputPublishMu.Lock()
-	defer d.inputPublishMu.Unlock()
-
-	next := *NewInputState()
-	if state != nil {
-		next = *state
+	if state == nil {
+		state = NewInputState()
 	}
-	nextPtr := &next
-
-	d.mtx.Lock()
-	d.inputState = nextPtr
-	d.mtx.Unlock()
-	select {
-	case <-d.inputCh:
-	default:
-	}
-	d.inputCh <- nextPtr
+	d.input.publish(*state, time.Now(), nil)
 }
 
 func (d *DualShock4) GetDescriptor() *usb.Descriptor {
@@ -363,6 +346,10 @@ func (d *DualShock4) SetInterfaceAltSetting(iface, alt uint8) {
 // preserves the selected alternate setting while establishing a hard data
 // generation boundary for the affected audio pipe.
 func (d *DualShock4) ResetEndpoint(endpoint uint8) {
+	if endpoint == EndpointIn {
+		d.input.reset()
+		return
+	}
 	d.mtx.Lock()
 	var resetSpeaker func()
 	switch endpoint {
@@ -383,23 +370,15 @@ func (d *DualShock4) HandleTransfer(ctx context.Context, ep uint32, dir uint32, 
 	epNumber := ep & 0x0F
 	if dir == usbip.DirIn {
 		switch epNumber {
-		case 4:
-			select {
-			case <-ctx.Done():
-				if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-					d.mtx.Lock()
-					is := d.inputState
-					ms := *d.metaState
-					d.mtx.Unlock()
-					return d.buildUSBInputReport(is, &ms)
-				}
+		case EndpointIn & 0x0F:
+			input, available := d.input.read(ctx)
+			if !available {
 				return nil
-			case is := <-d.inputCh:
-				d.mtx.Lock()
-				ms := *d.metaState
-				d.mtx.Unlock()
-				return d.buildUSBInputReport(is, &ms)
 			}
+			d.mtx.Lock()
+			meta := *d.metaState
+			d.mtx.Unlock()
+			return d.buildUSBInputReport(&input, &meta)
 		case EndpointMicrophoneIn & 0x0F:
 			return d.handleMicrophoneIn(ctx)
 		default:
@@ -526,8 +505,8 @@ func (d *DualShock4) HandleControl(bmRequestType, bRequest uint8, wValue, wIndex
 		switch bRequest {
 		case hidGetReport:
 			if reportType == reportTypeInput && reportID == ReportIDInput {
+				is := d.input.snapshot()
 				d.mtx.Lock()
-				is := *d.inputState
 				ms := *d.metaState
 				d.mtx.Unlock()
 				b := d.buildUSBInputReport(&is, &ms)

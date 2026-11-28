@@ -33,6 +33,9 @@ func TestAPICloseCancelsAcceptedManagementRequest(t *testing.T) {
 		select {
 		case <-req.Ctx.Done():
 			close(cancelled)
+			// Keep the handler live until the test verifies the peer closed.
+			// Returning could enqueue a response between cancellation and close.
+			<-release
 		case <-release:
 		}
 		return nil

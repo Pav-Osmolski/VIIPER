@@ -6,6 +6,10 @@ upstream asset is republished here. For DS4Windows, use its bundled backend.
 
 ## Unreleased
 
+## [0.1.21](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.21) - 2026-11-28
+
+- Preserve short DualShock 4 button and D-pad presses in order through USB input reads, while using the latest sample for unchanged controls. Clear pending transitions when their controller stream ends. Thanks to [@helloeaw](https://github.com/helloeaw) for the macro report in [DS4Windows #152](https://github.com/Pav-Osmolski/DS4Windows/issues/152).
+
 ## [0.1.20](https://github.com/Pav-Osmolski/VIIPER/releases/tag/v0.1.20) - 2026-11-27
 
 ### Nintendo’s wireless GameCube Controller for Switch 2
