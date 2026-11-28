@@ -58,6 +58,7 @@ func claimDualShock4StreamSerial(ds4 *DualShock4) (string, *dualShock4SerialRese
 	}
 	reservation := &dualShock4SerialReservation{owner: ds4}
 	serials[serial] = reservation
+	ds4.input.beginStream(reservation)
 	return serial, reservation, true
 }
 
@@ -67,6 +68,7 @@ func releaseDualShock4Serial(serial string, reservation *dualShock4SerialReserva
 	if reservation == nil || serials[serial] != reservation {
 		return false
 	}
+	reservation.owner.input.endStream(reservation)
 	delete(serials, serial)
 	return true
 }
@@ -195,7 +197,9 @@ func (h *handler) StreamHandler() api.StreamHandlerFunc {
 			return fmt.Errorf("DualShock4 serial %q is owned by another device", serial)
 		}
 		return readDualShock4InputStream(conn, ds4, logger,
-			microphoneInput, streamFrameVersion)
+			microphoneInput, streamFrameVersion, func(state *InputState) {
+				ds4.input.publish(*state, time.Now(), reservation)
+			})
 	}
 }
 
@@ -563,7 +567,7 @@ func (w *dualShock4OutputWriter) requestStop() {
 }
 
 func readDualShock4InputStream(conn net.Conn, ds4 *DualShock4,
-	logger *slog.Logger, microphoneInput bool, frameVersion byte) error {
+	logger *slog.Logger, microphoneInput bool, frameVersion byte, publish func(*InputState)) error {
 	if !microphoneInput {
 		buf := make([]byte, InputStateSize)
 		for {
@@ -579,7 +583,7 @@ func readDualShock4InputStream(conn net.Conn, ds4 *DualShock4,
 			if err := state.UnmarshalBinary(buf); err != nil {
 				return fmt.Errorf("unmarshal input state: %w", err)
 			}
-			ds4.UpdateInputState(&state)
+			publish(&state)
 		}
 	}
 
@@ -659,7 +663,7 @@ func readDualShock4InputStream(conn net.Conn, ds4 *DualShock4,
 			if err := state.UnmarshalBinary(input); err != nil {
 				return fmt.Errorf("unmarshal framed DualShock 4 input state: %w", err)
 			}
-			ds4.UpdateInputState(&state)
+			publish(&state)
 		case StreamFrameMicrophonePCM:
 			ds4.QueueMicrophonePCMFrame(microphonePCM)
 		}

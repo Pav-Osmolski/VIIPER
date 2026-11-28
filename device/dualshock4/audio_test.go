@@ -438,7 +438,7 @@ func TestFramedStreamQueuesDS4MicrophonePCM(t *testing.T) {
 	go func() {
 		done <- readDualShock4InputStream(server, dev,
 			slog.New(slog.NewTextHandler(io.Discard, nil)), true,
-			StreamFrameVersionV3)
+			StreamFrameVersionV3, dev.UpdateInputState)
 	}()
 
 	input, err := NewInputState().MarshalBinary()
